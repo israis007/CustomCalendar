@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="clock_dividers">#000</color>
+    <color name="clock_text_hour">#000000</color>
+    <color name="clock_line_now">#001287</color>
+    <color name="clock_background">#FFF</color>
+    <color name="grid_text">#12FFFFFF</color>
+    <color name="clock_work_time">#80000000</color>
+</resources>

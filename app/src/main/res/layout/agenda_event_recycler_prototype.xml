@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cvAgendaEvent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:focusable="true"
+    android:clickable="true"
+    android:foreground="?selectableItemBackground"
+    app:cardUseCompatPadding="true"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    tools:cardBackgroundColor="@color/colorEvent3">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/card_corner_radius">
+
+        <LinearLayout
+            android:id="@+id/llImages"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/card_images_margin"
+            android:layout_centerVertical="true"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/ivTop"
+                android:layout_width="@dimen/card_small_icon_size"
+                android:layout_height="@dimen/card_small_icon_size"
+                android:tint="@color/colorWhite"
+                android:contentDescription="@string/cd_card_icon"
+                android:src="@drawable/ic_group"/>
+
+            <ImageView
+                android:id="@+id/ivBottom"
+                android:layout_width="@dimen/card_small_icon_size"
+                android:layout_height="@dimen/card_small_icon_size"
+                android:tint="@color/colorWhite"
+                android:contentDescription="@string/cd_card_icon"
+                tools:src="@drawable/ic_cash"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/card_content_margin"
+            android:layout_marginEnd="@dimen/card_content_margin"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@id/llImages"
+            android:layout_toStartOf="@id/ivMore"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvAgendaEventTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:textSize="@dimen/card_text_size"
+                android:fontFamily="sans-serif-medium"
+                tools:text="Las Margaritas"/>
+
+            <TextView
+                android:id="@+id/tvAgendaEventTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:textSize="@dimen/card_text_size"
+                android:fontFamily="sans-serif"
+                tools:text="13:00 - 14:00"/>
+
+            <TextView
+                android:id="@+id/tvAgendaEventPlace"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:textSize="@dimen/card_text_size"
+                android:fontFamily="sans-serif"
+                tools:text="Calle Eleutélio Gonzáles Gonzalitos 4648"/>
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/ivMore"
+            android:layout_width="@dimen/card_medium_icon_size"
+            android:layout_height="@dimen/card_medium_icon_size"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:tint="@color/colorWhite"
+            android:contentDescription="@string/cd_card_menu"
+            android:src="@drawable/ic_more_vert"/>
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

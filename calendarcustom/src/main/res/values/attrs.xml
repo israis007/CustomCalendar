@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CustomCalendar">
+        <attr name="clock_text_show" format="boolean" />
+        <attr name="clock_text_color" format="color" />
+        <attr name="clock_text_size" format="dimension" />
+        <attr name="clock_text_min_size" format="dimension" />
+        <attr name="clock_text_max_size" format="dimension" />
+        <attr name="clock_text_margin_start" format="dimension" />
+        <attr name="clock_text_margin_top" format="dimension" />
+        <attr name="clock_text_margin_end" format="dimension" />
+        <attr name="clock_text_mask" format="string" />
+        <attr name="clock_max_hour" format="integer" />
+        <attr name="clock_min_hour" format="integer" />
+        <attr name="clock_line_now_show_hour" format="boolean" />
+        <attr name="clock_line_now_show" format="boolean" />
+        <attr name="clock_line_now_color" format="color" />
+        <attr name="clock_line_now_radius" format="dimension" />
+        <attr name="clock_line_now_height" format="dimension" />
+        <attr name="clock_vertical_dividers_show" format="boolean" />
+        <attr name="clock_vertical_dividers_color" format="color" />
+        <attr name="clock_horizontal_dividers_show" format="boolean" />
+        <attr name="clock_horizontal_dividers_color" format="color" />
+        <attr name="grid_event_at_time" format="integer" />
+        <attr name="grid_event_divider_minutes" format="integer" />
+        <attr name="clock_worktime_show" format="boolean" />
+        <attr name="clock_worktime_min_hour" format="integer" />
+        <attr name="clock_worktime_max_hour" format="integer" />
+        <attr name="clock_worktime_color" format="color" />
+        <attr name="clock_events_filter_transparency" format="boolean" />
+        <attr name="clock_events_opacity_percent" format="float" />
+    </declare-styleable>
+</resources>

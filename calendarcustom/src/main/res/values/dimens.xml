@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="clock_text_height">16sp</dimen>
+    <dimen name="clock_text_min_height">10sp</dimen>
+    <dimen name="clock_text_max_height">40sp</dimen>
+    <dimen name="clock_text_padding_start">12sp</dimen>
+    <dimen name="clock_text_padding_top">12sp</dimen>
+    <dimen name="clock_text_padding_end">12sp</dimen>
+    <dimen name="clock_text_padding_bottom">12sp</dimen>
+    <dimen name="clock_linenow_radius_circle">6sp</dimen>
+    <dimen name="clock_linenow_height">1sp</dimen>
+</resources>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CustomCalendar">
+        <item name="clock_text_show">true</item>
+        <item name="clock_text_color">@color/clock_text_hour</item>
+        <item name="clock_text_mask">@string/clock_mask</item>
+        <item name="clock_text_margin_start">@dimen/clock_text_padding_start</item>
+        <item name="clock_text_margin_top">@dimen/clock_text_padding_top</item>
+        <item name="clock_text_margin_end">@dimen/clock_text_padding_end</item>
+        <item name="clock_text_size">@dimen/clock_text_height</item>
+        <item name="clock_text_min_size">@dimen/clock_text_min_height</item>
+        <item name="clock_text_max_size">@dimen/clock_text_max_height</item>
+        <item name="clock_line_now_show">true</item>
+        <item name="clock_line_now_color">@color/clock_line_now</item>
+        <item name="clock_line_now_height">@dimen/clock_linenow_height</item>
+        <item name="clock_line_now_radius">@dimen/clock_linenow_radius_circle</item>
+        <item name="clock_horizontal_dividers_color">@color/clock_dividers</item>
+        <item name="clock_horizontal_dividers_show">true</item>
+        <item name="clock_vertical_dividers_color">@color/clock_dividers</item>
+        <item name="clock_vertical_dividers_show">true</item>
+        <item name="clock_max_hour">@integer/clock_max_hour</item>
+        <item name="clock_min_hour">@integer/clock_min_hour</item>
+        <item name="grid_event_at_time">@integer/max_event_at_time</item>
+        <item name="grid_event_divider_minutes">@integer/divider_each_minutes</item>
+    </style>
+</resources>

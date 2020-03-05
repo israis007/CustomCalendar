@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="LabelView">
+        <attr name="icon" format="reference"/>              <!-- Recurso de imagen -->
+        <attr name="text" format="string"/>                 <!-- Texto de la vista -->
+        <attr name="backgroundType" format="reference"/>    <!-- Referencia del shape de fondo -->
+        <attr name="itemsColor" format="color"/>            <!-- Recurso de colores -->
+    </declare-styleable>
+
+</resources>

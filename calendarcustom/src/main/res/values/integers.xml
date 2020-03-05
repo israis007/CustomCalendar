@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="max_event_at_time">1</integer>
+    <integer name="divider_each_minutes">15</integer>
+    <integer name="clock_max_hour">24</integer>
+    <integer name="clock_min_hour">0</integer>
+    <integer name="clock_worktime_max_hour">18</integer>
+    <integer name="clock_worktime_min_hour">8</integer>
+</resources>

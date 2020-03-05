@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="Columns">6</integer>
+    <integer name="Rows">100</integer>
+    <integer name="TotalRowsByLine">4</integer>
+    <integer name="WidthClock">40</integer>
+    <integer name="HeightClock">0</integer>
+    <integer name="WidthRowL1">1</integer>
+    <integer name="HeightRowL1">1</integer>
+    <integer name="WidthPoint">5</integer>
+    <integer name="HeightPoint">@integer/HeightRowL1</integer>
+    <integer name="WidthRowL2">@integer/WidthRowL1</integer>
+    <integer name="HeightRowL2">16</integer>
+    <integer name="WidthPoint2">@integer/WidthPoint</integer>
+    <integer name="HeightPoint2">@integer/HeightRowL2</integer>
+    <integer name="ClockTextSize">12</integer>
+    <integer name="WidthClockTopMargin">7</integer>
+</resources>

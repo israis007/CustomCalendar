@@ -1,14 +1,19 @@
 <resources>
-    <string name="app_name">CalendarCustom</string>
-    <string name="main_drawer_open">Open navigation drawer</string>
-    <string name="main_drawer_close">Close navigation drawer</string>
-    <string name="main_action_today">Jump to Today</string>
-    <string name="main_action_regenerate">Regenerate events</string>
+    <string name="hour_format">H:mm</string>
 
-    <string name="config_range">Range</string>
-    <string name="config_range_day">Day</string>
-    <string name="config_range_week">Week</string>
+    <!-- CONTENT DESCRIPTION'S -->
+    <string name="cd_label_icon">Label Icon</string>
+    <string name="cd_card_icon">Card Icon</string>
+    <string name="cd_card_menu">Card Menu Icon</string>
 
-    <string name="drawer_info_creator">Created by Jonas Wanke</string>
-    <string name="drawer_info_contact">contact@jonas-wanke.com</string>
+    <!-- MENU'S -->
+    <string name="menu_calendar_view">Calendar View</string>
+    <string name="menu_device_info">Info</string>
+    <string name="menu_setttings">Settings</string>
+    <string name="menu_edit">Editar</string>
+
+    <!-- EXTENDED FAB's -->
+    <string name="efab_indications">Indicaciones</string>
+
+
 </resources>

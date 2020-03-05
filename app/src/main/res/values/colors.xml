@@ -1,6 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+    <!-- Main Theme -->
+    <color name="colorPrimary">#FFFFFF</color>
+    <color name="colorPrimaryDark">#007570</color>
+    <color name="colorAccent">#0FA59E</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorBlack">#000000</color>
+
+
+    <!-- Label's -->
+    <color name="labelSelectedItems">#0FA59E</color>
+    <color name="labelSelectedBackground">#E6F6F5</color>
+    <color name="labelUnselectedItems">#858585</color>
+    <color name="labelUnselectedBackground">#FFFFFF</color>
+
+
+    <!-- TOOLBAR -->
+    <color name="colorToolbarItems">#99000000</color>
+
+    <!-- EVENT CARDS -->
+    <color name="colorEvent1">#CC42B6E4</color>
+    <color name="colorEvent2">#65D7B7</color>
+    <color name="colorEvent3">#F46F7A</color>
+
+    <!-- AGENDA DAY -->
+    <color name="colorAgendaNumber">#0162C4</color>
+    <color name="colorAgendaDivider">#22000000</color>
+
+
+
+    <color name="gray_light">#404040</color>
+    <color name="gray_light_text">#DD777777</color>
+    <color name="white">#FFF</color>
+    <color name="transparent">#00FFFFFF</color>
+
+
 </resources>

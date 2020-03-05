@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- FAB -->
+    <dimen name="fab_margin">16dp</dimen>
+
+    <!-- LABEL VIEW -->
+    <dimen name="label_fixed_height">32dp</dimen>
+    <dimen name="label_margin">12dp</dimen>
+    <dimen name="label_container_padding">4dp</dimen>
+    <dimen name="label_text_size">12sp</dimen>
+
+    <!-- CARD VIEW -->
+    <dimen name="card_corner_radius">4dp</dimen>
+    <dimen name="card_small_icon_size">24dp</dimen>
+    <dimen name="card_medium_icon_size">28dp</dimen>
+    <dimen name="card_content_margin">12dp</dimen>
+    <dimen name="card_images_margin">8dp</dimen>
+    <dimen name="card_text_size">12sp</dimen>
+
+    <!-- AGENDA DAY -->
+    <dimen name="agenda_day_margin">8dp</dimen>
+    <dimen name="agenda_day_text_size">14sp</dimen>
+    <dimen name="agenda_day_number_size">26sp</dimen>
+    <dimen name="agenda_day_top_align">6dp</dimen>
+
+</resources>
