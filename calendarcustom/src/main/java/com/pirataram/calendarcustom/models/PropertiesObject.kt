@@ -77,7 +77,7 @@ class PropertiesObject(private val calendar: Calendar) {
 
     fun isToday(): Boolean {
         val calnow = Calendar.getInstance(Locale.getDefault())
-        Log.d("ProObjetc", "${calnow[Calendar.YEAR]} -> ${calendar[Calendar.YEAR]} | ${calnow[Calendar.DAY_OF_MONTH]} -> ${calendar[Calendar.MONTH]} | ${calnow[Calendar.DAY_OF_MONTH]} -> ${calendar[Calendar.DAY_OF_MONTH]}")
+        Log.d("ProObjetc", "${calnow[Calendar.YEAR]} -> ${calendar[Calendar.YEAR]} | ${calnow[Calendar.MONTH]} -> ${calendar[Calendar.MONTH]} | ${calnow[Calendar.DAY_OF_MONTH]} -> ${calendar[Calendar.DAY_OF_MONTH]}")
         return calnow[Calendar.YEAR] == calendar[Calendar.YEAR] && calnow[Calendar.MONTH] == calendar[Calendar.MONTH] && calnow[Calendar.DAY_OF_MONTH] == calendar[Calendar.DAY_OF_MONTH]
     }
 

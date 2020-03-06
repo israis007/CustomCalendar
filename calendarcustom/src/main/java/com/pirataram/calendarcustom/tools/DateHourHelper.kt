@@ -16,6 +16,7 @@ class DateHourHelper {
             date.time = millisecons
             val cal = Calendar.getInstance(Locale.getDefault())
             cal.time = date
+            cal.timeZone = TimeZone.getDefault()
             return cal
         }
     }
