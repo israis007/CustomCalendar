@@ -2,9 +2,9 @@ package com.pirataram.calendarcustom.models
 
 import android.view.View
 import com.google.gson.Gson
+import com.pirataram.calendarcustom.tools.DateHourHelper.Companion.getCalendar
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.Comparator
 
 data class EventModel(
     val id: Long,
@@ -15,9 +15,12 @@ data class EventModel(
     val classPojo: Any
 ) {
 
+    constructor(id: Long, startTime: Long, endTime: Long, view: View, classPojo: Any): this(
+        id, getCalendar(startTime), getCalendar(endTime), 0, view, classPojo
+    )
+
     fun getDurationInMinutes(): Long =
         TimeUnit.MILLISECONDS.toMinutes(endTime.timeInMillis - startTime.timeInMillis)
-
 
     override fun toString(): String = Gson().toJson(this)
 
