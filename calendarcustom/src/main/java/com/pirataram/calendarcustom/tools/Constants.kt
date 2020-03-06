@@ -10,6 +10,9 @@ class Constants {
     companion object {
         val TAG = Constants::class.java.simpleName
         const val transparency = 0.8f
+        const val eventStart = 1
+        const val colsStart = 0
+        const val divisorPadding = 2
         val calendarChanged = MutableLiveData<Calendar>()
         private var isActiveCoroutine = false
 

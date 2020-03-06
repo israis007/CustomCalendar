@@ -121,9 +121,7 @@ class MainFragment : Fragment() {
             ))
             }
         }
-        Log.d(TAG, "Antes de ordenar ")
-        Collections.sort(listaEventosPrint, EventModel.EventModelComparator())
-        clock.addEvents(listaEventosPrint)
+        clock.addEvents(activity!!, listaEventosPrint)
     }
 
 }

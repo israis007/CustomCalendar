@@ -9,6 +9,8 @@ import com.pirataram.calendarcustom.tools.DateHourFormatter
 import java.util.*
 
 class PropertiesObject(private val calendar: Calendar) {
+    var width: Float = 0f
+    var height: Float = 0f
     var clock_text_show: Boolean = true
     var clock_text_color: Int = 0
     var clock_text_size: Float = 0f
@@ -36,6 +38,7 @@ class PropertiesObject(private val calendar: Calendar) {
     var clock_worktime_color: Int = 0
     var clock_events_filter_transparency: Boolean = true
     var clock_events_opacity_percent: Float = 0f
+    var clock_events_padding_between: Float = 0f
     private var clockPaint: TextPaint = TextPaint()
     private var lineNowPaint: Paint = Paint()
     private var gridHorizontalPaint: Paint = Paint()

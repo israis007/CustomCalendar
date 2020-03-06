@@ -1,24 +1,27 @@
 package com.pirataram.calendarcustom.ui
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
-import android.util.Log
+import android.util.DisplayMetrics
+import android.view.Display
 import android.view.View
+import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
-import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import androidx.core.content.withStyledAttributes
 import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
+import androidx.core.view.marginStart
 import com.pirataram.calendarcustom.R
+import com.pirataram.calendarcustom.models.DrawEventModel
 import com.pirataram.calendarcustom.models.EventModel
 import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
-import com.pirataram.calendarcustom.tools.DateHourFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.round
@@ -30,9 +33,9 @@ class CustomCalendar @JvmOverloads constructor(
     private lateinit var proOb: PropertiesObject
     private var calendar = Calendar.getInstance(Locale.getDefault())
     private var gridc: LinearCustom
-    private var lastCalendar = Calendar.getInstance()
     private var lastCoorY = 0f
     private val TAG = "CustomCalendar"
+    private val displayMetrics = DisplayMetrics()
 
     init {
         context.withStyledAttributes(
@@ -136,9 +139,13 @@ class CustomCalendar @JvmOverloads constructor(
                 R.styleable.CustomCalendar_clock_events_filter_transparency,
                 true
             )
-            proOb.clock_events_opacity_percent = getFloat(
+            proOb.clock_events_opacity_percent = getDimension(
                 R.styleable.CustomCalendar_clock_events_opacity_percent,
                 Constants.transparency
+            )
+            proOb.clock_events_padding_between = getDimension(
+                R.styleable.CustomCalendar_clock_events_padding_between,
+                reso.getDimension(R.dimen.clock_event_padding)
             )
         }
 
@@ -182,17 +189,49 @@ class CustomCalendar @JvmOverloads constructor(
         addView(scroll)
     }
 
-    fun addEvents(arrayList: ArrayList<EventModel>) {
-//        gridc.addEvents(arrayList)
+    fun addEvents(activity: Activity, listaEventos: ArrayList<EventModel>) {
+        activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
+        //Sort events according start time
+        Collections.sort(listaEventos, EventModel.EventModelComparator())
+        //Validating if twice or more events sharing time
+        val drawList = ArrayList<DrawEventModel>()
+        repeat(listaEventos.size){
+            val newEventDraw = DrawEventModel(Constants.eventStart, Constants.colsStart, listaEventos[it])
+            if (it == 0)
+                drawList.add(DrawEventModel(Constants.eventStart, Constants.colsStart, listaEventos[it]))
+            else {
+                var isAdded = false
+                repeat(drawList.size){ it2 ->
+                    run {
+                        val eventAdded = drawList[it2]
+                        newEventDraw.cols = eventAdded.cols
+                        newEventDraw.events = eventAdded.events
+                        if (newEventDraw.eventModel.startTime.timeInMillis < eventAdded.eventModel.endTime.timeInMillis) {
+                            drawList[it2].events++
+                            newEventDraw.cols++
+                            newEventDraw.events++
+                            isAdded = true
+                            drawList.add(newEventDraw)
+                        }
+                    }
+                }
+                if (!isAdded){
+                    newEventDraw.cols = Constants.colsStart
+                    newEventDraw.events = Constants.eventStart
+                    drawList.add(newEventDraw)
+                }
+            }
+        }
+        //Remove all views
         gridc.removeAllViews()
-        lastCalendar[Calendar.HOUR_OF_DAY] = 0
-        lastCalendar[Calendar.MINUTE] = 0
-        lastCalendar[Calendar.SECOND] = 0
+        listaEventos.clear()
         val coory = proOb.getCoorYToDrawHorizontalLines()
-        arrayList.forEach { element ->
+
+        //Draws views events
+        drawList.forEach { element ->
             run {
-                val view = element.view
-                val color = element.background
+                val view = element.eventModel.view
+                val color = element.eventModel.background
                 if (proOb.clock_events_filter_transparency) {
                     val transp = Color.argb(
                         round(color.alpha * .8f).toInt(),
@@ -202,28 +241,35 @@ class CustomCalendar @JvmOverloads constructor(
                     )
                     view.setBackgroundColor(transp)
                 }
-                val h1 = element.startTime[Calendar.HOUR_OF_DAY] - proOb.clock_min_hour
-                val h2 = element.endTime[Calendar.HOUR_OF_DAY] - proOb.clock_min_hour
-                Log.d(TAG, "h1 -> $h1 | h2 -> $h2")
+                val h1 = element.eventModel.startTime[Calendar.HOUR_OF_DAY] - proOb.clock_min_hour
+                val h2 = element.eventModel.endTime[Calendar.HOUR_OF_DAY] - proOb.clock_min_hour
                 val cy1 = coory[h1]
                 val cy2 = coory[h1 + 1]
                 val cy3 = coory[h2]
                 val cy4 = coory[h2 + 1]
-                val coy1 = if (element.startTime[Calendar.MINUTE] > 0) {
-                    cy1 + ((cy2 - cy1) / 59) * element.startTime[Calendar.MINUTE]
+                val coy1 = if (element.eventModel.startTime[Calendar.MINUTE] > 0) {
+                    cy1 + ((cy2 - cy1) / 59) * element.eventModel.startTime[Calendar.MINUTE]
                 } else
                     cy1
-                val coy2 = if (element.endTime[Calendar.MINUTE] > 0) {
-                    cy3 + ((cy4 - cy3) / 59) * element.endTime[Calendar.MINUTE]
+                val coy2 = if (element.eventModel.endTime[Calendar.MINUTE] > 0) {
+                    cy3 + ((cy4 - cy3) / 59) * element.eventModel.endTime[Calendar.MINUTE]
                 } else
                     cy3
                 val mart = coy1 - lastCoorY
-                val tvlp = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
+                val margin_start_to_draw = (proOb.getCoorXToDrawVerticalLine() - proOb.getCoorXToDrawHorizontalLines()) * 2
+                val width_to_draw = displayMetrics.widthPixels - proOb.getCoorXToDrawHorizontalLines() - margin_start_to_draw
+                val width_by_event = width_to_draw / element.events - proOb.clock_events_padding_between / Constants.divisorPadding
+                val tvlp = LinearLayout.LayoutParams (
+                    width_by_event.toInt(),
                     (coy2 - coy1).toInt()
                 )
                 tvlp.setMargins(
-                    ((proOb.getCoorXToDrawVerticalLine() - proOb.getCoorXToDrawHorizontalLines()) * 2).toInt(),
+                    if (element.events == 1)
+                        margin_start_to_draw.toInt()
+                    else
+                        (margin_start_to_draw
+                                + (width_by_event * element.cols)
+                                + (element.cols * (proOb.clock_events_padding_between / Constants.divisorPadding))).toInt(),
                     mart.toInt(),
                     0,
                     0

@@ -29,5 +29,6 @@
         <attr name="clock_worktime_color" format="color" />
         <attr name="clock_events_filter_transparency" format="boolean" />
         <attr name="clock_events_opacity_percent" format="float" />
+        <attr name="clock_events_padding_between" format="dimension" />
     </declare-styleable>
 </resources>
