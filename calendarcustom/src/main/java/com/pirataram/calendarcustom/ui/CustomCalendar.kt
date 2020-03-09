@@ -239,7 +239,7 @@ class CustomCalendar @JvmOverloads constructor(
                         color.green,
                         color.blue
                     )
-                    view.setBackgroundColor(transp) 
+                    view.setBackgroundColor(transp)
                 }
                 val h1 = element.eventModel.startTime[Calendar.HOUR_OF_DAY] - proOb.clock_min_hour
                 val h2 = element.eventModel.endTime[Calendar.HOUR_OF_DAY] - proOb.clock_min_hour

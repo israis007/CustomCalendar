@@ -12,12 +12,11 @@ class DateHourHelper {
         }
 
         fun getCalendar(millisecons: Long): Calendar {
-            val date = Date()
-            date.time = millisecons
-            val cal = Calendar.getInstance(Locale.getDefault())
-            cal.time = date
-            cal.timeZone = TimeZone.getDefault()
-            return cal
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = millisecons
+            val goyoCalendar = GregorianCalendar(TimeZone.getDefault())
+            goyoCalendar.timeInMillis = calendar.timeInMillis
+            return goyoCalendar
         }
     }
 }
