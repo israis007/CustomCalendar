@@ -22,7 +22,7 @@ data class EventModel(
     fun getDurationInMinutes(): Long =
         TimeUnit.MILLISECONDS.toMinutes(endTime.timeInMillis - startTime.timeInMillis)
 
-    override fun toString(): String = Gson().toJson(this)
+    override fun toString(): String = Gson().toJson("$id,$startTime,$endTime,$background,$view,$classPojo")
 
     class EventModelComparator: Comparator<EventModel> {
         override fun compare(event1: EventModel?, event2: EventModel?): Int {

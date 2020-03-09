@@ -22,6 +22,7 @@ import com.pirataram.calendarcustom.models.DrawEventModel
 import com.pirataram.calendarcustom.models.EventModel
 import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
+import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.round
@@ -210,8 +211,16 @@ class CustomCalendar @JvmOverloads constructor(
                             drawList[it2].events++
                             newEventDraw.cols++
                             newEventDraw.events++
-                            isAdded = true
-                            drawList.add(newEventDraw)
+                            //Buscar si el evento ya fue agregado
+                            drawList.forEach { event -> run {
+                                if (event.eventModel.id == newEventDraw.eventModel.id){
+                                    isAdded = true
+                                }
+                            } }
+                            if (!isAdded) {
+                                drawList.add(newEventDraw)
+                                isAdded = true
+                            }
                         }
                     }
                 }
@@ -276,7 +285,11 @@ class CustomCalendar @JvmOverloads constructor(
                 )
                 view.layoutParams = tvlp
                 view.id = View.generateViewId()
-                gridc.addView(view)
+                try {
+                    gridc.addView(view)
+                } catch (il: IllegalStateException){
+                    throw Exception("Fail to add a view by: ${il.stackTrace}")
+                }
                 lastCoorY = coy2
             }
         }
