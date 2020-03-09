@@ -231,6 +231,14 @@ class CustomCalendar @JvmOverloads constructor(
                 }
             }
         }
+        //Validate events not start or end in hours out of time
+        drawList.forEach {
+            if (it.eventModel.startTime[Calendar.HOUR_OF_DAY] < proOb.clock_min_hour ||
+                it.eventModel.startTime[Calendar.HOUR_OF_DAY] > proOb.clock_max_hour ||
+                it.eventModel.endTime[Calendar.HOUR_OF_DAY] > proOb.clock_max_hour)
+            drawList.remove(it)
+        }
+
         //Remove all views
         gridc.removeAllViews()
         listaEventos.clear()
