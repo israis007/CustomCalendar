@@ -3,6 +3,7 @@ package com.pirataram.calendarcustom.ui
 import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
+import android.util.Log
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import com.pirataram.calendarcustom.R
@@ -26,10 +27,23 @@ class LinearCustom @JvmOverloads constructor(
         orientation = VERTICAL
         setBackgroundColor(ContextCompat.getColor(context, R.color.grid_text))
         Constants.calendarChanged.observeForever {
-            invalidate()
-            requestLayout()
+            rePaint()
         }
         Constants.startCoroutineCalendar()
+        Constants.heightChange.observeForever {
+            val newValue = Constants.heightChange.value!!
+            if (newValue > 0f) {
+                propertiesObject.clock_text_margin_top = newValue
+                rePaint()
+                Log.d("LinearCustom", "newValue = $newValue")
+            }
+        }
+    }
+
+
+    private fun rePaint(){
+        invalidate()
+        requestLayout()
     }
 
     override fun onDraw(canvas: Canvas?) {

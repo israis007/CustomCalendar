@@ -21,13 +21,15 @@ class ClockLayout @JvmOverloads constructor(
 
     private lateinit var propertiesObject: PropertiesObject
 
-    constructor(context: Context, propertiesObject: PropertiesObject): this(context){
+    constructor(context: Context, propertiesObject: PropertiesObject) : this(context) {
         this.propertiesObject = propertiesObject
         _hourHeight = propertiesObject.clock_text_size
         Constants.heightChange.observeForever {
-            if (Constants.heightChange.value!!.toInt() > 0) {
-                _hourHeight = Constants.heightChange.value!!
-                propertiesObject.clock_text_margin_top = _hourHeight
+            val newValue = Constants.heightChange.value!!
+            if (newValue > 0f) {
+                _hourHeight = newValue
+                propertiesObject.clock_text_margin_top = newValue
+                Log.d("ClockLayout", "newValue = $newValue")
                 invalidate()
                 requestLayout()
             }
@@ -126,7 +128,13 @@ class ClockLayout @JvmOverloads constructor(
         }
         //Draw Line Vertical
         if (propertiesObject.clock_vertical_dividers_show)
-            canvas.drawLine(xTemp, 0f, xTemp, coorY[propertiesObject.getHoursToDraw()], propertiesObject.getGridVerticalPaint())
+            canvas.drawLine(
+                xTemp,
+                0f,
+                xTemp,
+                coorY[propertiesObject.getHoursToDraw()],
+                propertiesObject.getGridVerticalPaint()
+            )
     }
 
 }

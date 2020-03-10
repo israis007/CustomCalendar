@@ -1,11 +1,11 @@
 package com.pirataram.calendarcustom.ui
 
-import android.R.attr.factor
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
@@ -24,6 +24,8 @@ import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.round
 import kotlin.properties.Delegates
 
@@ -38,12 +40,13 @@ class CustomCalendar @JvmOverloads constructor(
     private val TAG = "CustomCalendar"
     private val displayMetrics = DisplayMetrics()
     private var scaleDetector: ScaleGestureDetector
-    val scroll = ScrollView(context) as android.widget.ScrollView
+    private var multiplier = 5.0f
+    private var mScaleFactor = 1.0f
+    private var lastValue = 0f
+    private var drawList = ArrayList<DrawEventModel>()
 
-    var scrollPosition: Int by Delegates.observable(0) { _, _, new ->
-        scroll.scrollY = new
-//        Constants.heightChange.value = new
-    }
+
+    val scroll = ScrollView(context) as android.widget.ScrollView
 
     var hourHeightMin: Float by Delegates.observable(0f) { _, _, new ->
         if (new > 0 && hourHeight < new)
@@ -216,36 +219,46 @@ class CustomCalendar @JvmOverloads constructor(
 
         scaleDetector = ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
-            override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
-                Constants.factor = 1.0f
-                return super.onScaleBegin(detector)
-            }
-
             override fun onScale(detector: ScaleGestureDetector?): Boolean {
                 if (detector == null)
                     return false
 
+                mScaleFactor *= detector.scaleFactor
+                val minValue = 3.0f
+                val maxValue = 9.0f
+                mScaleFactor = max(minValue, min(mScaleFactor, maxValue))
 
-/*
-                val foc = (detector.focusY + scrollPosition) / proOb.clock_text_size
-                hourHeight *= detector.currentSpanY / detector.previousSpanY
-                scrollPosition = (foc * hourHeight - detector.focusY).toInt()
-*/
-                val scaleFactor = detector.currentSpanY - detector.previousSpanY
-                Constants.factor += scaleFactor.toInt()
-
-                Constants.heightChange.value = Constants.heightChange.value!! * Constants.factor.toInt()
+                Log.d(TAG, "Scale factor: $mScaleFactor")
+                var newValue = proOb.clock_text_margin_top
+                if (newValue >= proOb.clock_text_min_size &&
+                    newValue <= proOb.clock_text_max_size) {
+                    if (lastValue >= mScaleFactor || mScaleFactor == minValue)
+                        newValue -= mScaleFactor * multiplier
+                    else
+                        newValue += mScaleFactor * multiplier
+                    Constants.heightChange.value = newValue
+                    proOb.clock_text_margin_top = newValue
+                    Log.d("CustomCalendar", "newValue = $newValue")
+                }
+                lastValue = mScaleFactor
+                invalidate()
+                requestLayout()
+                printEvents()
 
                 return true
             }
         })
 
-        addView(scroll)
-    }
+        /*Constants.heightChange.observeForever {
+            val newValue = Constants.heightChange.value!!
+            if (newValue > 0f) {
+                proOb.clock_text_margin_top = newValue
+                Log.d("CustomCalendar", "newValue = $newValue")
 
-    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        scaleDetector.onTouchEvent(ev)
-        return super.dispatchTouchEvent(ev)
+            }
+        }*/
+
+        addView(scroll)
     }
 
     fun addEvents(activity: Activity, listaEventos: ArrayList<EventModel>) {
@@ -253,7 +266,7 @@ class CustomCalendar @JvmOverloads constructor(
         //Sort events according start time
         Collections.sort(listaEventos, EventModel.EventModelComparator())
         //Validating if twice or more events sharing time
-        val drawList = ArrayList<DrawEventModel>()
+        drawList = ArrayList<DrawEventModel>()
         repeat(listaEventos.size){
             val newEventDraw = DrawEventModel(Constants.eventStart, Constants.colsStart, listaEventos[it])
             if (it == 0)
@@ -296,10 +309,15 @@ class CustomCalendar @JvmOverloads constructor(
                 it.eventModel.endTime[Calendar.HOUR_OF_DAY] > proOb.clock_max_hour)
             drawList.remove(it)
         }
+        //Clear array to save memory
+        listaEventos.clear()
+        //Print Events
+        printEvents()
+    }
 
+    private fun printEvents(){
         //Remove all views
         gridc.removeAllViews()
-        listaEventos.clear()
         val coory = proOb.getCoorYToDrawHorizontalLines()
 
         //Draws views events
@@ -307,7 +325,7 @@ class CustomCalendar @JvmOverloads constructor(
             run {
                 val view = element.eventModel.view
                 val color = element.eventModel.background
-                if (proOb.clock_events_filter_transparency) {
+                if (proOb.clock_events_filter_transparency && color != null && color > 0) {
                     val transp = Color.argb(
                         round(color.alpha * .8f).toInt(),
                         color.red,
@@ -359,5 +377,10 @@ class CustomCalendar @JvmOverloads constructor(
                 lastCoorY = coy2
             }
         }
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        scaleDetector.onTouchEvent(ev)
+        return super.dispatchTouchEvent(ev)
     }
 }

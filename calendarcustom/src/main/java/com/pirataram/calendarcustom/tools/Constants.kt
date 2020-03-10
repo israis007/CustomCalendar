@@ -26,8 +26,6 @@ class Constants {
                 if (heightChange.value == null)
                     heightChange.postValue(0f)
                 else {
-                    if (BuildConfig.DEBUG)
-                        Log.d(TAG, "Handler call !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     if (calendarChanged.value!![Calendar.MINUTE] != timenow[Calendar.MINUTE])
                         calendarChanged.postValue(timenow)
                 }
