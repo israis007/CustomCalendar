@@ -1,13 +1,14 @@
 package com.pirataram.calendarcustom.ui
 
+import android.R.attr.factor
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
 import android.util.DisplayMetrics
-import android.view.Display
+import android.view.MotionEvent
+import android.view.ScaleGestureDetector
 import android.view.View
-import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
@@ -16,16 +17,15 @@ import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
-import androidx.core.view.marginStart
 import com.pirataram.calendarcustom.R
 import com.pirataram.calendarcustom.models.DrawEventModel
 import com.pirataram.calendarcustom.models.EventModel
 import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
-import java.lang.Exception
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.round
+import kotlin.properties.Delegates
 
 
 class CustomCalendar @JvmOverloads constructor(
@@ -37,6 +37,33 @@ class CustomCalendar @JvmOverloads constructor(
     private var lastCoorY = 0f
     private val TAG = "CustomCalendar"
     private val displayMetrics = DisplayMetrics()
+    private var scaleDetector: ScaleGestureDetector
+    val scroll = ScrollView(context) as android.widget.ScrollView
+
+    var scrollPosition: Int by Delegates.observable(0) { _, _, new ->
+        scroll.scrollY = new
+//        Constants.heightChange.value = new
+    }
+
+    var hourHeightMin: Float by Delegates.observable(0f) { _, _, new ->
+        if (new > 0 && hourHeight < new)
+            hourHeight = new
+    }
+    var hourHeightMax: Float by Delegates.observable(0f) { _, _, new ->
+        if (new > 0 && hourHeight > new)
+            hourHeight = new
+    }
+
+    var hourHeight: Float by Delegates.vetoable(0f) { _, old, new ->
+        @Suppress("ComplexCondition")
+        if ((hourHeightMin > 0 && new < hourHeightMin)
+            || (hourHeightMax > 0 && new > hourHeightMax))
+            return@vetoable false
+        if (old == new)
+            return@vetoable true
+
+        return@vetoable true
+    }
 
     init {
         context.withStyledAttributes(
@@ -154,7 +181,7 @@ class CustomCalendar @JvmOverloads constructor(
             LayoutParams.MATCH_PARENT,
             LayoutParams.MATCH_PARENT
         )
-        val scroll = ScrollView(context) as android.widget.ScrollView
+
         scroll.layoutParams = scrollParams
         scrollParams.addRule(ALIGN_PARENT_END, TRUE)
         scrollParams.addRule(ALIGN_PARENT_TOP, TRUE)
@@ -187,7 +214,38 @@ class CustomCalendar @JvmOverloads constructor(
 
         scroll.addView(relativeLayout)
 
+        scaleDetector = ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+
+            override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
+                Constants.factor = 1.0f
+                return super.onScaleBegin(detector)
+            }
+
+            override fun onScale(detector: ScaleGestureDetector?): Boolean {
+                if (detector == null)
+                    return false
+
+
+/*
+                val foc = (detector.focusY + scrollPosition) / proOb.clock_text_size
+                hourHeight *= detector.currentSpanY / detector.previousSpanY
+                scrollPosition = (foc * hourHeight - detector.focusY).toInt()
+*/
+                val scaleFactor = detector.currentSpanY - detector.previousSpanY
+                Constants.factor += scaleFactor.toInt()
+
+                Constants.heightChange.value = Constants.heightChange.value!! * Constants.factor.toInt()
+
+                return true
+            }
+        })
+
         addView(scroll)
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        scaleDetector.onTouchEvent(ev)
+        return super.dispatchTouchEvent(ev)
     }
 
     fun addEvents(activity: Activity, listaEventos: ArrayList<EventModel>) {

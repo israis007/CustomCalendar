@@ -24,6 +24,14 @@ class ClockLayout @JvmOverloads constructor(
     constructor(context: Context, propertiesObject: PropertiesObject): this(context){
         this.propertiesObject = propertiesObject
         _hourHeight = propertiesObject.clock_text_size
+        Constants.heightChange.observeForever {
+            if (Constants.heightChange.value!!.toInt() > 0) {
+                _hourHeight = Constants.heightChange.value!!
+                propertiesObject.clock_text_margin_top = _hourHeight
+                invalidate()
+                requestLayout()
+            }
+        }
     }
 
     val TAG = ClockLayout::class.java.simpleName

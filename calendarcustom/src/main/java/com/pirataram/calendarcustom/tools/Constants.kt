@@ -13,7 +13,9 @@ class Constants {
         const val eventStart = 1
         const val colsStart = 0
         const val divisorPadding = 2
+        var factor = 1.0f
         val calendarChanged = MutableLiveData<Calendar>()
+        val heightChange = MutableLiveData<Float>()
         private var isActiveCoroutine = false
 
         val asd = GlobalScope.async(Dispatchers.Main + CoroutineName("pirataCoroutine")) {
@@ -21,6 +23,8 @@ class Constants {
                 val timenow = Calendar.getInstance()
                 if (calendarChanged.value == null)
                     calendarChanged.postValue(Calendar.getInstance())
+                if (heightChange.value == null)
+                    heightChange.postValue(0f)
                 else {
                     if (BuildConfig.DEBUG)
                         Log.d(TAG, "Handler call !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
