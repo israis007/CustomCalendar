@@ -3,7 +3,7 @@
     <color name="clock_dividers">#000</color>
     <color name="clock_text_hour">#000000</color>
     <color name="clock_line_now">#001287</color>
-    <color name="clock_background">#FFF</color>
-    <color name="grid_text">#12FFFFFF</color>
+    <color name="clock_background">#FBFBFB</color>
+    <color name="grid_text">#B2DC1111</color>
     <color name="clock_work_time">#80000000</color>
 </resources>

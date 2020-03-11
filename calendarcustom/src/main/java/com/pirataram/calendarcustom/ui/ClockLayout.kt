@@ -2,14 +2,19 @@ package com.pirataram.calendarcustom.ui
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.RectF
+import android.text.TextPaint
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
 import com.pirataram.calendarcustom.tools.DateHourFormatter
+import com.pirataram.calendarcustom.tools.NumberHelper
 import java.util.*
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.properties.Delegates
 
@@ -24,6 +29,11 @@ class ClockLayout @JvmOverloads constructor(
     constructor(context: Context, propertiesObject: PropertiesObject) : this(context) {
         this.propertiesObject = propertiesObject
         _hourHeight = propertiesObject.clock_text_size
+        Constants.calendarChanged.observeForever {
+            invalidate()
+            requestLayout()
+        }
+        Constants.startCoroutineCalendar()
         Constants.heightChange.observeForever {
             val newValue = Constants.heightChange.value!!
             if (newValue > 0f) {
@@ -135,6 +145,51 @@ class ClockLayout @JvmOverloads constructor(
                 coorY[propertiesObject.getHoursToDraw()],
                 propertiesObject.getGridVerticalPaint()
             )
+
+        //Draw Now Line
+        if (propertiesObject.clock_line_show) {
+            if (!propertiesObject.isOutOfHour()) {
+                if (propertiesObject.isToday()) {
+                    val paint = propertiesObject.getLineNowPaint()
+                    val rect = Rect()
+                    val cale = Calendar.getInstance(Locale.getDefault())
+                    val diff = propertiesObject.getDifferenceOfHours()
+                    val difBet = (coorY[diff + 1] - coorY[diff]) / 59
+                    val yT =
+                        coorY[diff] + (difBet * cale[Calendar.MINUTE])
+                    val times = propertiesObject.clock_line_now_height
+                    var half = NumberHelper.getHalfNumber(times) * -1
+                    repeat(abs(half) * 2 + 1) {
+                        canvas.drawLine(xTemp, yT + half, width.toFloat(), yT + half, paint)
+                        half++
+                    }
+                    canvas.drawCircle(xTemp, yT, propertiesObject.clock_line_now_radius, paint)
+
+                    //Draw text hour now
+                    if (propertiesObject.clock_line_now_show_hour) {
+                        paint.textSize = propertiesObject.clock_text_size * .8f
+                        val text = DateHourFormatter.getStringFormatted(
+                            cale,
+                            propertiesObject.clock_text_mask
+                        )
+                        val color = paint.color
+                        paint.getTextBounds(text, 0, text.length, rect)
+                        paint.color = propertiesObject.clock_background
+                        val cx =
+                            propertiesObject.getCoorXToDrawHorizontalLines() - rect.width() * 1.25f
+                        canvas.drawOval(
+                            cx * 0.85f,
+                            yT - paint.textSize * .75f,
+                            propertiesObject.getCoorXToDrawHorizontalLines(),
+                            yT + paint.textSize * .85f,
+                            paint
+                        )
+                        paint.color = color
+                        canvas.drawText(text, cx, yT + paint.textSize / 2, paint)
+                    }
+                }
+            }
+        }
     }
 
 }

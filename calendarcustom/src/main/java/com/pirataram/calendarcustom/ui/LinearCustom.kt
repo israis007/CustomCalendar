@@ -26,18 +26,6 @@ class LinearCustom @JvmOverloads constructor(
         this.propertiesObject = propertiesObject
         orientation = VERTICAL
         setBackgroundColor(ContextCompat.getColor(context, R.color.grid_text))
-        Constants.calendarChanged.observeForever {
-            rePaint()
-        }
-        Constants.startCoroutineCalendar()
-        Constants.heightChange.observeForever {
-            val newValue = Constants.heightChange.value!!
-            if (newValue > 0f) {
-                propertiesObject.clock_text_margin_top = newValue
-                rePaint()
-                Log.d("LinearCustom", "newValue = $newValue")
-            }
-        }
     }
 
 
@@ -46,7 +34,7 @@ class LinearCustom @JvmOverloads constructor(
         requestLayout()
     }
 
-    override fun onDraw(canvas: Canvas?) {
+    /*override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
         if (canvas == null)
@@ -77,5 +65,5 @@ class LinearCustom @JvmOverloads constructor(
                 }
             }
         }
-    }
+    }*/
 }

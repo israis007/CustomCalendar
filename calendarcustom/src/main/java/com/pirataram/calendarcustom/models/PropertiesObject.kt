@@ -1,7 +1,6 @@
 package com.pirataram.calendarcustom.models
 
 import android.graphics.Paint
-import android.graphics.Rect
 import android.text.TextPaint
 import android.util.Log
 import com.google.gson.Gson
@@ -9,8 +8,7 @@ import com.pirataram.calendarcustom.tools.DateHourFormatter
 import java.util.*
 
 class PropertiesObject(private val calendar: Calendar) {
-    var width: Float = 0f
-    var height: Float = 0f
+    var clock_background: Int = 0
     var clock_text_show: Boolean = true
     var clock_text_color: Int = 0
     var clock_text_size: Float = 0f
@@ -22,6 +20,7 @@ class PropertiesObject(private val calendar: Calendar) {
     var clock_text_mask: String = ""
     var clock_max_hour: Int = 0
     var clock_min_hour: Int = 0
+    var clock_line_now_show_hour: Boolean = true
     var clock_line_show: Boolean = true
     var clock_line_now_color: Int = 0
     var clock_line_now_radius: Float = 0f

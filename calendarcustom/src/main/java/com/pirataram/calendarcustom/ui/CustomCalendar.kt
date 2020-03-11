@@ -3,6 +3,7 @@ package com.pirataram.calendarcustom.ui
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
+import android.text.Layout
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.Log
@@ -24,6 +25,7 @@ import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
@@ -35,18 +37,16 @@ class CustomCalendar @JvmOverloads constructor(
 ) : RelativeLayout(context, attrs, defStyleAttr) {
     private lateinit var proOb: PropertiesObject
     private var calendar = Calendar.getInstance(Locale.getDefault())
-    private var gridc: LinearCustom
+    private lateinit var gridc: LinearCustom
     private var lastCoorY = 0f
     private val TAG = "CustomCalendar"
     private val displayMetrics = DisplayMetrics()
     private var scaleDetector: ScaleGestureDetector
-    private var multiplier = 5.0f
     private var mScaleFactor = 1.0f
     private var lastValue = 0f
     private var drawList = ArrayList<DrawEventModel>()
-
-
-    val scroll = ScrollView(context) as android.widget.ScrollView
+    private lateinit var clock: View
+    private lateinit var coory: FloatArray
 
     var hourHeightMin: Float by Delegates.observable(0f) { _, _, new ->
         if (new > 0 && hourHeight < new)
@@ -77,6 +77,9 @@ class CustomCalendar @JvmOverloads constructor(
         ) {
             proOb = PropertiesObject(calendar)
             val reso = context.resources
+            proOb.clock_background = getColor(
+                R.styleable.CustomCalendar_clock_background,
+                ContextCompat.getColor(context, R.color.clock_background))
             proOb.clock_text_show = getBoolean(R.styleable.CustomCalendar_clock_text_show, true)
             proOb.clock_text_color = getColor(
                 R.styleable.CustomCalendar_clock_text_color,
@@ -117,6 +120,7 @@ class CustomCalendar @JvmOverloads constructor(
                 R.styleable.CustomCalendar_clock_min_hour,
                 reso.getInteger(R.integer.clock_min_hour)
             )
+            proOb.clock_line_now_show_hour = getBoolean(R.styleable.CustomCalendar_clock_line_now_show_hour, true)
             proOb.clock_line_show = getBoolean(R.styleable.CustomCalendar_clock_line_now_show, true)
             proOb.clock_line_now_color = getColor(
                 R.styleable.CustomCalendar_clock_line_now_color,
@@ -180,42 +184,7 @@ class CustomCalendar @JvmOverloads constructor(
             )
         }
 
-        val scrollParams = LayoutParams(
-            LayoutParams.MATCH_PARENT,
-            LayoutParams.MATCH_PARENT
-        )
-
-        scroll.layoutParams = scrollParams
-        scrollParams.addRule(ALIGN_PARENT_END, TRUE)
-        scrollParams.addRule(ALIGN_PARENT_TOP, TRUE)
-        scrollParams.addRule(ALIGN_PARENT_START, TRUE)
-        scrollParams.addRule(ALIGN_PARENT_BOTTOM, TRUE)
-
-        val clock = ClockLayout(context, proOb) as View
-
-        gridc = LinearCustom(context, proOb)
-
-        val relativeLayout = RelativeLayout(context)
-        val position = LayoutParams(
-            LayoutParams.MATCH_PARENT,
-            LayoutParams.WRAP_CONTENT
-        )
-        position.addRule(CENTER_IN_PARENT)
-        clock.layoutParams = position
-        relativeLayout.addView(clock)
-
-        //Calculates margin start and height
-        val coory = proOb.getCoorYToDrawHorizontalLines()[proOb.getHoursToDraw()].toInt()
-        val position2 = LayoutParams(
-            LayoutParams.MATCH_PARENT,
-            coory
-        )
-        position2.setMargins(proOb.getCoorXToDrawHorizontalLines().toInt(), 0, 0, 0)
-        position2.addRule(BELOW, clock.id)
-        gridc.layoutParams = position2
-        relativeLayout.addView(gridc)
-
-        scroll.addView(relativeLayout)
+        reCalcViews()
 
         scaleDetector = ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
@@ -227,38 +196,92 @@ class CustomCalendar @JvmOverloads constructor(
                 val minValue = 3.0f
                 val maxValue = 9.0f
                 mScaleFactor = max(minValue, min(mScaleFactor, maxValue))
+                Log.d(TAG, "Scale factor calculated: $mScaleFactor -> lastValue: $lastValue")
 
-                Log.d(TAG, "Scale factor: $mScaleFactor")
                 var newValue = proOb.clock_text_margin_top
                 if (newValue >= proOb.clock_text_min_size &&
                     newValue <= proOb.clock_text_max_size) {
-                    if (lastValue >= mScaleFactor || mScaleFactor == minValue)
-                        newValue -= mScaleFactor * multiplier
-                    else
-                        newValue += mScaleFactor * multiplier
+                    if (mScaleFactor == minValue || lastValue > mScaleFactor)
+                        newValue -= mScaleFactor
+                    else if (mScaleFactor == maxValue || lastValue < mScaleFactor)
+                        newValue += mScaleFactor
+
+                    if (newValue <= proOb.clock_text_min_size)
+                        newValue = proOb.clock_text_min_size
+                    if (newValue >= proOb.clock_text_max_size)
+                        newValue = proOb.clock_text_max_size
+
                     Constants.heightChange.value = newValue
                     proOb.clock_text_margin_top = newValue
                     Log.d("CustomCalendar", "newValue = $newValue")
                 }
-                lastValue = mScaleFactor
-                invalidate()
-                requestLayout()
-                printEvents()
-
+                lastValue = abs(mScaleFactor)
                 return true
             }
         })
 
-        /*Constants.heightChange.observeForever {
+        Constants.heightChange.observeForever {
             val newValue = Constants.heightChange.value!!
             if (newValue > 0f) {
                 proOb.clock_text_margin_top = newValue
                 Log.d("CustomCalendar", "newValue = $newValue")
-
+                invalidate()
+                requestLayout()
+                printEvents()
             }
-        }*/
+        }
+    }
+
+    fun reCalcViews(){
+//        removeAllViews()
+        val scroll = ScrollView(context) as android.widget.ScrollView
+//        scroll.removeAllViews()
+        val scrollParams = LayoutParams(
+            LayoutParams.MATCH_PARENT,
+            LayoutParams.WRAP_CONTENT
+        )
+
+        scroll.layoutParams = scrollParams
+        scrollParams.addRule(ALIGN_PARENT_END, TRUE)
+        scrollParams.addRule(ALIGN_PARENT_TOP, TRUE)
+        scrollParams.addRule(ALIGN_PARENT_START, TRUE)
+        scrollParams.addRule(ALIGN_PARENT_BOTTOM, TRUE)
+
+        clock = ClockLayout(context, proOb) as View
+        gridc = LinearCustom(context, proOb)
+        val relativeLayout = RelativeLayout(context)
+        val position = LayoutParams(
+            LayoutParams.MATCH_PARENT,
+            LayoutParams.WRAP_CONTENT
+        )
+        position.addRule(CENTER_IN_PARENT)
+        clock.layoutParams = position
+        relativeLayout.addView(clock)
+
+        calculateNewParams()
+
+        relativeLayout.addView(gridc)
+
+        scroll.addView(relativeLayout)
 
         addView(scroll)
+
+        setBackgroundColor(proOb.clock_background)
+
+    }
+
+    private fun calculateNewParams(){
+        //Calculates margin start and height
+        coory = proOb.getCoorYToDrawHorizontalLines()
+        val position2 = LayoutParams(
+            LayoutParams.MATCH_PARENT,
+            coory[proOb.getHoursToDraw()].toInt()
+        )
+        position2.setMargins(proOb.getCoorXToDrawHorizontalLines().toInt(), 0, 0, 0)
+        position2.addRule(BELOW, clock.id)
+        position2.addRule(ALIGN_PARENT_START, TRUE)
+        position2.addRule(ALIGN_PARENT_END, TRUE)
+        gridc.layoutParams = position2
     }
 
     fun addEvents(activity: Activity, listaEventos: ArrayList<EventModel>) {
@@ -318,8 +341,8 @@ class CustomCalendar @JvmOverloads constructor(
     private fun printEvents(){
         //Remove all views
         gridc.removeAllViews()
-        val coory = proOb.getCoorYToDrawHorizontalLines()
-
+        //Recalc params
+        calculateNewParams()
         //Draws views events
         drawList.forEach { element ->
             run {
@@ -372,7 +395,7 @@ class CustomCalendar @JvmOverloads constructor(
                 try {
                     gridc.addView(view)
                 } catch (il: IllegalStateException){
-                    throw Exception("Fail to add a view by: ${il.stackTrace}")
+                    Log.d(TAG, "Fail to add a view by: ${il.stackTrace}")
                 }
                 lastCoorY = coy2
             }
