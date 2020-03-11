@@ -37,7 +37,7 @@ class CustomCalendar @JvmOverloads constructor(
 ) : RelativeLayout(context, attrs, defStyleAttr) {
     private lateinit var proOb: PropertiesObject
     private var calendar = Calendar.getInstance(Locale.getDefault())
-    private lateinit var gridc: LinearCustom
+    private lateinit var gridc: LinearLayout
     private var lastCoorY = 0f
     private val TAG = "CustomCalendar"
     private val displayMetrics = DisplayMetrics()
@@ -232,10 +232,8 @@ class CustomCalendar @JvmOverloads constructor(
         }
     }
 
-    fun reCalcViews(){
-//        removeAllViews()
+    private fun reCalcViews(){
         val scroll = ScrollView(context) as android.widget.ScrollView
-//        scroll.removeAllViews()
         val scrollParams = LayoutParams(
             LayoutParams.MATCH_PARENT,
             LayoutParams.WRAP_CONTENT
@@ -247,8 +245,9 @@ class CustomCalendar @JvmOverloads constructor(
         scrollParams.addRule(ALIGN_PARENT_START, TRUE)
         scrollParams.addRule(ALIGN_PARENT_BOTTOM, TRUE)
 
-        clock = ClockLayout(context, proOb) as View
-        gridc = LinearCustom(context, proOb)
+        clock = ClockLayout(context, proOb)
+        gridc = LinearLayout(context)
+        gridc.orientation = LinearLayout.VERTICAL
         val relativeLayout = RelativeLayout(context)
         val position = LayoutParams(
             LayoutParams.MATCH_PARENT,
@@ -289,7 +288,7 @@ class CustomCalendar @JvmOverloads constructor(
         //Sort events according start time
         Collections.sort(listaEventos, EventModel.EventModelComparator())
         //Validating if twice or more events sharing time
-        drawList = ArrayList<DrawEventModel>()
+        drawList = ArrayList()
         repeat(listaEventos.size){
             val newEventDraw = DrawEventModel(Constants.eventStart, Constants.colsStart, listaEventos[it])
             if (it == 0)
@@ -339,6 +338,7 @@ class CustomCalendar @JvmOverloads constructor(
     }
 
     private fun printEvents(){
+        lastCoorY = 0f
         //Remove all views
         gridc.removeAllViews()
         //Recalc params
