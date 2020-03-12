@@ -9,6 +9,8 @@ import androidx.core.content.withStyledAttributes
 import androidx.viewpager.widget.ViewPager
 import com.google.gson.Gson
 import com.pirataram.calendarcustom.R
+import com.pirataram.calendarcustom.models.EventListModel
+import com.pirataram.calendarcustom.models.EventModel
 import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
 import com.pirataram.calendarcustom.ui.CustomCalendar
@@ -24,6 +26,8 @@ class ViewPagerCalendar @JvmOverloads constructor(
     private val listDaysView = ArrayList<CustomCalendar>()
     private var viewPager: ViewPager = ViewPager(context)
     private lateinit var proOb: PropertiesObject
+    private lateinit var viewPagerEvent: ViewPagerEvent
+    private lateinit var eventListModel: ArrayList<EventListModel>
 
     init {
         context.withStyledAttributes(attrs,
@@ -167,6 +171,20 @@ class ViewPagerCalendar @JvmOverloads constructor(
 
         viewPager.currentItem = 2
 
+        val myEvents = object: ViewPagerEvent{
+            override fun selectPage(position: Int) {
+
+            }
+
+            override fun currentPage(): Int = selected
+
+            override fun currentCalendar(): Calendar = listDaysView[selected].calendar
+
+            override fun addEvents(eventList: java.util.ArrayList<EventModel>) {
+
+            }
+        }
+
         viewPager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
             override fun onPageScrollStateChanged(state: Int) {
                 if(state == 0){
@@ -174,6 +192,8 @@ class ViewPagerCalendar @JvmOverloads constructor(
                         addCalendar(selected, Direction.UP)
                     } else if (selected == 0)
                         addCalendar(selected, Direction.DOWN)
+                    ViewPagerModel.currentPage.value = selected
+                    ViewPagerModel.selectCalendar.value = listDaysView[selected].calendar
                 }
             }
 
@@ -188,6 +208,10 @@ class ViewPagerCalendar @JvmOverloads constructor(
             }
         })
 
+    }
+
+    fun addViewPagerListeners(viewPagerEvent: ViewPagerEvent){
+        this.viewPagerEvent = viewPagerEvent
     }
 
     private fun addCalendar(position: Int, direction: Direction){
@@ -256,6 +280,13 @@ class ViewPagerCalendar @JvmOverloads constructor(
     private enum class Direction {
         UP,
         DOWN
+    }
+
+    fun addEvents(eventList: ArrayList<EventListModel>){
+        this.eventListModel = eventList
+
+        //Searching for events according to list of days
+
     }
 
 }
