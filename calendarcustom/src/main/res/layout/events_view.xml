@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent">
 
-    <com.pirataram.calendarcustom.ui.CustomCalendar
+    <com.pirataram.calendarcustom.ui.OneDayLayout
         android:id="@+id/clock"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

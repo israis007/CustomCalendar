@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <style name="ParentCustom">
         <item name="clock_text_show">true</item>
         <item name="clock_text_color">@color/clock_text_hour</item>
@@ -25,7 +24,7 @@
         <item name="grid_event_divider_minutes">@integer/divider_each_minutes</item>
     </style>
 
-    <style name="CustomCalendar" parent="ParentCustom">
+    <style name="OneDayLayout" parent="ParentCustom">
     </style>
 
     <style name="ViewPagerCalendar" parent="ParentCustom">

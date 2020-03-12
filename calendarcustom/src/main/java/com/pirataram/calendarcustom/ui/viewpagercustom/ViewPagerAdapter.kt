@@ -1,16 +1,15 @@
 package com.pirataram.calendarcustom.ui.viewpagercustom
 
 import android.content.Context
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.viewpager.widget.PagerAdapter
 import com.pirataram.calendarcustom.R
 import com.pirataram.calendarcustom.tools.DateHourFormatter
-import com.pirataram.calendarcustom.ui.CustomCalendar
+import com.pirataram.calendarcustom.ui.OneDayLayout
 
 class ViewPagerAdapter(private val context: Context,
-                       private val views: ArrayList<CustomCalendar>
+                       private val views: ArrayList<OneDayLayout>
 ) :
     PagerAdapter() {
 

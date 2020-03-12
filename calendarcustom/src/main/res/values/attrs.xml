@@ -12,6 +12,10 @@
     <attr name="clock_text_mask" format="string" />
     <attr name="clock_max_hour" format="integer" />
     <attr name="clock_min_hour" format="integer" />
+    <attr name="clock_line_now_draw_on" format="enum">
+        <enum value="0" name="UP" />
+        <enum value="1" name="DOWN" />
+    </attr>
     <attr name="clock_line_now_show_hour" format="boolean" />
     <attr name="clock_line_now_show" format="boolean" />
     <attr name="clock_line_now_color" format="color" />
@@ -31,7 +35,7 @@
     <attr name="clock_events_opacity_percent" format="float" />
     <attr name="clock_events_padding_between" format="dimension" />
 
-    <declare-styleable name="CustomCalendar">
+    <declare-styleable name="OneDayLayout">
         <attr name="clock_background" />
         <attr name="clock_text_show" />
         <attr name="clock_text_color" />
@@ -44,6 +48,7 @@
         <attr name="clock_text_mask" />
         <attr name="clock_max_hour" />
         <attr name="clock_min_hour" />
+        <attr name="clock_line_now_draw_on" />
         <attr name="clock_line_now_show_hour" />
         <attr name="clock_line_now_show" />
         <attr name="clock_line_now_color" />
@@ -76,6 +81,7 @@
         <attr name="clock_text_mask" />
         <attr name="clock_max_hour" />
         <attr name="clock_min_hour" />
+        <attr name="clock_line_now_draw_on" />
         <attr name="clock_line_now_show_hour" />
         <attr name="clock_line_now_show" />
         <attr name="clock_line_now_color" />

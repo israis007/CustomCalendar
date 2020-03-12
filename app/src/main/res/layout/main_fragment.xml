@@ -7,13 +7,14 @@
     android:layout_height="match_parent"
     tools:context=".ui.main.MainFragment">
 
-    <com.pirataram.calendarcustom.ui.CustomCalendar
+    <com.pirataram.calendarcustom.ui.OneDayLayout
         android:id="@+id/clock"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:clock_line_now_draw_on="DOWN"
         app:clock_text_color="@color/clock_text_hour"
         app:clock_text_max_size="100sp"
         app:clock_text_min_size="30sp"

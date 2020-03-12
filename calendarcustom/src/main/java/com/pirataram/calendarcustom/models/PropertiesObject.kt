@@ -20,6 +20,7 @@ class PropertiesObject(var calendar: Calendar) {
     var clock_text_mask: String = ""
     var clock_max_hour: Int = 0
     var clock_min_hour: Int = 0
+    var clock_line_now_show_draw_on: Direction = Direction.UP
     var clock_line_now_show_hour: Boolean = true
     var clock_line_now_show: Boolean = true
     var clock_line_now_color: Int = 0
@@ -145,6 +146,17 @@ class PropertiesObject(var calendar: Calendar) {
             isAntiAlias = true
         }
         return gridWorkTimePaint
+    }
+
+    companion object {
+        enum class Direction {
+            UP,
+            DOWN;
+        }
+
+        fun getDirection(value: Int): Direction {
+            return if (value == 0) Direction.UP else Direction.DOWN
+        }
     }
 
 }
