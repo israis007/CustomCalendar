@@ -2,10 +2,7 @@ package com.pirataram.calendarcustom.ui
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Rect
-import android.graphics.RectF
-import android.text.TextPaint
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
@@ -39,7 +36,6 @@ class ClockLayout @JvmOverloads constructor(
             if (newValue > 0f) {
                 _hourHeight = newValue
                 propertiesObject.clock_text_margin_top = newValue
-                Log.d("ClockLayout", "newValue = $newValue")
                 invalidate()
                 requestLayout()
             }
@@ -147,7 +143,7 @@ class ClockLayout @JvmOverloads constructor(
             )
 
         //Draw Now Line
-        if (propertiesObject.clock_line_show) {
+        if (propertiesObject.clock_line_now_show) {
             if (!propertiesObject.isOutOfHour()) {
                 if (propertiesObject.isToday()) {
                     val paint = propertiesObject.getLineNowPaint()

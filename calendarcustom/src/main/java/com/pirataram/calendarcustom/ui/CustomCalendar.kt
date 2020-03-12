@@ -3,7 +3,6 @@ package com.pirataram.calendarcustom.ui
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
-import android.text.Layout
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.Log
@@ -18,6 +17,7 @@ import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
+import com.google.gson.Gson
 import com.pirataram.calendarcustom.R
 import com.pirataram.calendarcustom.models.DrawEventModel
 import com.pirataram.calendarcustom.models.EventModel
@@ -29,14 +29,14 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
-import kotlin.properties.Delegates
 
 
 class CustomCalendar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : RelativeLayout(context, attrs, defStyleAttr) {
+
     private lateinit var proOb: PropertiesObject
-    private var calendar = Calendar.getInstance(Locale.getDefault())
+    var calendar = Calendar.getInstance(Locale.getDefault())
     private lateinit var gridc: LinearLayout
     private var lastCoorY = 0f
     private val TAG = "CustomCalendar"
@@ -48,24 +48,18 @@ class CustomCalendar @JvmOverloads constructor(
     private lateinit var clock: View
     private lateinit var coory: FloatArray
 
-    var hourHeightMin: Float by Delegates.observable(0f) { _, _, new ->
-        if (new > 0 && hourHeight < new)
-            hourHeight = new
-    }
-    var hourHeightMax: Float by Delegates.observable(0f) { _, _, new ->
-        if (new > 0 && hourHeight > new)
-            hourHeight = new
+    constructor(context: Context, calendar: Calendar): this(context){
+        this.calendar = calendar
+        proOb.calendar = calendar
+        reCalcViews()
     }
 
-    var hourHeight: Float by Delegates.vetoable(0f) { _, old, new ->
-        @Suppress("ComplexCondition")
-        if ((hourHeightMin > 0 && new < hourHeightMin)
-            || (hourHeightMax > 0 && new > hourHeightMax))
-            return@vetoable false
-        if (old == new)
-            return@vetoable true
-
-        return@vetoable true
+    constructor(context: Context, propertiesObject: PropertiesObject, calendar: Calendar): this(context){
+        this.calendar = calendar
+        this.proOb = propertiesObject
+        this.proOb.calendar = calendar
+        Log.d(TAG, "Propiedades: ${Gson().toJson(proOb)}")
+        reCalcViews()
     }
 
     init {
@@ -121,7 +115,7 @@ class CustomCalendar @JvmOverloads constructor(
                 reso.getInteger(R.integer.clock_min_hour)
             )
             proOb.clock_line_now_show_hour = getBoolean(R.styleable.CustomCalendar_clock_line_now_show_hour, true)
-            proOb.clock_line_show = getBoolean(R.styleable.CustomCalendar_clock_line_now_show, true)
+            proOb.clock_line_now_show = getBoolean(R.styleable.CustomCalendar_clock_line_now_show, true)
             proOb.clock_line_now_color = getColor(
                 R.styleable.CustomCalendar_clock_line_now_color,
                 ContextCompat.getColor(context, R.color.clock_line_now)
@@ -233,17 +227,18 @@ class CustomCalendar @JvmOverloads constructor(
     }
 
     private fun reCalcViews(){
+        removeAllViews()
         val scroll = ScrollView(context) as android.widget.ScrollView
         val scrollParams = LayoutParams(
             LayoutParams.MATCH_PARENT,
             LayoutParams.WRAP_CONTENT
         )
 
-        scroll.layoutParams = scrollParams
         scrollParams.addRule(ALIGN_PARENT_END, TRUE)
         scrollParams.addRule(ALIGN_PARENT_TOP, TRUE)
         scrollParams.addRule(ALIGN_PARENT_START, TRUE)
         scrollParams.addRule(ALIGN_PARENT_BOTTOM, TRUE)
+        scroll.layoutParams = scrollParams
 
         clock = ClockLayout(context, proOb)
         gridc = LinearLayout(context)
