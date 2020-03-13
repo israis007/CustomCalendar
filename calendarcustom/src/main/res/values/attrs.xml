@@ -100,5 +100,17 @@
         <attr name="clock_events_filter_transparency" />
         <attr name="clock_events_opacity_percent" />
         <attr name="clock_events_padding_between" />
+        <attr name="clock_max_date" format="enum">
+            <enum name="Today" value="0" />
+            <enum name="Future" value="1" />
+            <enum name="Infinitely" value="3" />
+        </attr>
+        <attr name="clock_min_date" format="enum">
+            <enum name="Today" value="0" />
+            <enum name="Past" value="2" />
+            <enum name="Infinitely" value="3" />
+        </attr>
+        <attr name="clock_max_date_millis" format="string" />
+        <attr name="clock_min_date_millis" format="string" />
     </declare-styleable>
 </resources>

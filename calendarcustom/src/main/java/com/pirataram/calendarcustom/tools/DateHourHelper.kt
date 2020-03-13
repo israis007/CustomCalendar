@@ -1,6 +1,7 @@
 package com.pirataram.calendarcustom.tools
 
 import android.util.Log
+import android.util.TimeUtils
 import com.pirataram.calendarcustom.BuildConfig
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -20,8 +21,26 @@ class DateHourHelper {
             val goyoCalendar = GregorianCalendar(TimeZone.getDefault())
             goyoCalendar.timeInMillis = calendar.timeInMillis
             if (BuildConfig.DEBUG)
-                Log.d(TAG, "Calendar converted TimeZone defualt ---> ${DateHourFormatter.getStringFormatted(goyoCalendar, "dd/MM/yyyy  HH:mm:ss aa")} <---")
+                Log.d(TAG, "Calendar converted TimeZone default ---> ${DateHourFormatter.getStringFormatted(goyoCalendar, "dd/MM/yyyy  HH:mm:ss aa")} <---")
             return goyoCalendar
         }
+
+        fun getCalendarWithoutHour(calendar: Calendar): Calendar {
+            return calendar.apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+        }
+
+        fun getCurrentCalendarWithoutHour() : Calendar =
+            getCalendarWithoutHour(Calendar.getInstance(Locale.getDefault()))
+
+        fun getCalendarInDays(calendar: Calendar): Long =
+            TimeUnit.MILLISECONDS.toDays(calendar.timeInMillis)
+
+        fun getCurrentCalendarInDays(): Long =
+            TimeUnit.MILLISECONDS.toDays(getCurrentCalendarWithoutHour().timeInMillis)
     }
 }

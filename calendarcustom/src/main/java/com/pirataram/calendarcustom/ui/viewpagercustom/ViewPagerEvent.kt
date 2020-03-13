@@ -8,8 +8,6 @@ import kotlin.collections.ArrayList
 
 interface ViewPagerEvent {
 
-    fun selectPage(): Int
-
     fun currentPage(position: Int)
 
     fun currentCalendar(calendar: Calendar)
