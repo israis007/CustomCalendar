@@ -219,6 +219,8 @@ class ViewPagerCalendar @JvmOverloads constructor(
 
         this.addView(viewPager)
 
+        viewPager.currentItem = today
+
         if (viewPagerEvent != null)
             viewPagerEvent!!.getAllCustomCalendarViews(listDaysView)
 
@@ -270,28 +272,54 @@ class ViewPagerCalendar @JvmOverloads constructor(
 
     fun addViewPagerListeners(viewPagerEvent: ViewPagerEvent) {
         this.viewPagerEvent = viewPagerEvent
-        val dp = listDaysView[1]
-        val dt = listDaysView[2]
-        val dn = listDaysView[3]
-        dp.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsPreviousDay())
-        dt.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsCurrentDay())
-        dn.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsNextDay())
+        var dp: OneDayLayout? = null
+        val dt: OneDayLayout
+        var df: OneDayLayout? = null
+        if (proOb.clock_max_date == PropertiesObject.Limits.TODAY && proOb.clock_min_date == PropertiesObject.Limits.TODAY) {
+            dt = listDaysView[0]
+        } else if (proOb.clock_max_date == PropertiesObject.Limits.TODAY && (proOb.clock_min_date == PropertiesObject.Limits.PAST || proOb.clock_min_date == PropertiesObject.Limits.INFINITELY)) {
+            dp = listDaysView[listDaysView.size - 2]
+            dt = listDaysView[listDaysView.size - 1]
+        }else if (proOb.clock_min_date == PropertiesObject.Limits.TODAY && (proOb.clock_max_date == PropertiesObject.Limits.FUTURE || proOb.clock_max_date == PropertiesObject.Limits.INFINITELY)) {
+            dt = listDaysView[0]
+            df = listDaysView[1]
+        } else { //******* INFINITELY TO THE TWO SIDES *******//
+            dp = listDaysView[1]
+            dt = listDaysView[2]
+            df = listDaysView[3]
+        }
+        if (dp != null && viewPagerEvent.refreshEventsPreviousDay())
+            dp.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsPreviousDay())
+
+        if (viewPagerEvent.refreshEventsToday())
+            dt.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsCurrentDay())
+
+        if (df != null && viewPagerEvent.refreshEventsNextDay())
+            df.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsNextDay())
+
     }
 
     private fun addCalendar(position: Int, direction: Direction) {
-        if (proOb.clock_max_date != PropertiesObject.Limits.TODAY && proOb.clock_min_date != PropertiesObject.Limits.TODAY) {
+        Log.d(TAG, "addCalendar $position -> $direction")
+        if (!(proOb.clock_max_date == PropertiesObject.Limits.TODAY &&
+                    proOb.clock_min_date == PropertiesObject.Limits.TODAY)) {
             val cv = getNewCalendar(
                 listDaysView[position].calendar,
                 direction,
                 1
             )
-            if (direction == Direction.UP && (proOb.clock_max_date_calendar[Calendar.DAY_OF_YEAR] - cv.calendar[Calendar.DAY_OF_YEAR] > 0)) {
+            if (direction == Direction.UP &&
+                (proOb.getTotalDaysFuture(proOb.clock_min_date_calendar) > 0 || proOb.clock_max_date == PropertiesObject.Limits.INFINITELY)) {
                 listDaysView.add(cv)
-                listDaysView.removeAt(0)
-            } else if ((cv.calendar[Calendar.DAY_OF_YEAR] - proOb.clock_min_date_calendar[Calendar.DAY_OF_YEAR] > 0)) {
+                if (listDaysView.size >= context.resources.getInteger(R.integer.cache_all_days))
+                    listDaysView.removeAt(0)
+            } else if (direction == Direction.DOWN &&
+                (proOb.getTotalDaysPast(proOb.clock_max_date_calendar) > 0 || proOb.clock_min_date == PropertiesObject.Limits.INFINITELY)) {
                 listDaysView.add(0, cv)
-                listDaysView.removeAt(listDaysView.size - 1)
-            }
+                if (listDaysView.size >= context.resources.getInteger(R.integer.cache_all_days))
+                    listDaysView.removeAt(listDaysView.size - 1)
+            } else
+                return
             viewPager.adapter!!.notifyDataSetChanged()
         }
     }
@@ -365,8 +393,8 @@ class ViewPagerCalendar @JvmOverloads constructor(
         //Create a list of days to show in cache
         val cal = DateHourHelper.getCurrentCalendarWithoutHour()
         val cache = context.resources.getInteger(R.integer.cache_days)
-        val daysPast = proOb.getTotalDaysPast().toInt()
-        val daysFuture = proOb.getTotalDaysFuture().toInt()
+        val daysPast = proOb.getTotalDaysPast(null).toInt()
+        val daysFuture = proOb.getTotalDaysFuture(null).toInt()
         if (proOb.clock_max_date == PropertiesObject.Limits.TODAY && proOb.clock_min_date == PropertiesObject.Limits.TODAY) {
             listDaysView.add(OneDayLayout(context, proOb, cal))
             today = 0
@@ -375,12 +403,12 @@ class ViewPagerCalendar @JvmOverloads constructor(
                 addPast(cache, cal)
             else
                 addPast(daysPast, cal)
-            listDaysView.add(OneDayLayout(context, proOb, cal)) //Add Today
             today = listDaysView.size
+            listDaysView.add(OneDayLayout(context, proOb, cal)) //Add Today
         } else if (proOb.clock_max_date == PropertiesObject.Limits.TODAY && proOb.clock_min_date == PropertiesObject.Limits.INFINITELY) {
             addPast(daysPast, cal)
-            listDaysView.add(OneDayLayout(context, proOb, cal)) //Add Today
             today = listDaysView.size
+            listDaysView.add(OneDayLayout(context, proOb, cal)) //Add Today
         } else if (proOb.clock_min_date == PropertiesObject.Limits.TODAY && proOb.clock_max_date == PropertiesObject.Limits.FUTURE) {
             today = 0
             listDaysView.add(OneDayLayout(context, proOb, cal)) //Add Today
@@ -399,12 +427,10 @@ class ViewPagerCalendar @JvmOverloads constructor(
             addFuture(cache, cal)
         }
 
-        viewPager.currentItem = today
-
         if (this.viewPagerEvent != null) {
             if (proOb.clock_max_date != PropertiesObject.Limits.TODAY && proOb.clock_min_date != PropertiesObject.Limits.TODAY) {
-                val restPast = proOb.getTotalDaysPast()
-                val restFuture = proOb.getTotalDaysFuture()
+                val restPast = proOb.getTotalDaysPast(null)
+                val restFuture = proOb.getTotalDaysFuture(null)
                 var vp: OneDayLayout? = null
                 val vt = listDaysView[today]
                 var vf: OneDayLayout? = null

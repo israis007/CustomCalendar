@@ -95,10 +95,11 @@ class PropertiesObject(var calendar: Calendar) {
 
     fun getCoorYToDrawHorizontalLines(): FloatArray {
         val floatArray = FloatArray(getHoursToDraw() + 1)
-            repeat(getHoursToDraw()){
-                floatArray[it] = (getheighByPx() * (it + 1)) - (clock_text_size * h)
-            }
-        floatArray[getHoursToDraw()] = floatArray[getHoursToDraw() - 1] + getheighByPx() - (clock_text_size * h)
+        repeat(getHoursToDraw()) {
+            floatArray[it] = (getheighByPx() * (it + 1)) - (clock_text_size * h)
+        }
+        floatArray[getHoursToDraw()] =
+            floatArray[getHoursToDraw() - 1] + getheighByPx() - (clock_text_size * h)
         return floatArray
     }
 
@@ -108,12 +109,14 @@ class PropertiesObject(var calendar: Calendar) {
         return (cy2 - cy1) / 59
     }
 
-    fun getCoorXToDrawHorizontalLines(): Float = getCoorXToDrawVerticalLine() - (clock_text_margin_end / 2)
+    fun getCoorXToDrawHorizontalLines(): Float =
+        getCoorXToDrawVerticalLine() - (clock_text_margin_end / 2)
 
-    fun getDifferenceOfHours(): Int = Calendar.getInstance(Locale.getDefault())[Calendar.HOUR_OF_DAY] - clock_min_hour
+    fun getDifferenceOfHours(): Int =
+        Calendar.getInstance(Locale.getDefault())[Calendar.HOUR_OF_DAY] - clock_min_hour
 
     fun getClockPaint(): TextPaint {
-        clockPaint.apply{
+        clockPaint.apply {
             color = clock_text_color
             isAntiAlias = true
             textSize = clock_text_size
@@ -153,19 +156,35 @@ class PropertiesObject(var calendar: Calendar) {
         return gridWorkTimePaint
     }
 
-    fun getTotalDaysPast(): Long {
+    fun getTotalDaysPast(calendar: Calendar?): Long {
         var rest = DateHourHelper.getCurrentCalendarInDays() -
                 DateHourHelper.getCalendarInDays(clock_min_date_calendar)
         if (rest == 0L)
-            rest = 2 /*Case that input a bad timestamp in millis*/
+            rest = when (clock_min_date) {
+                Limits.TODAY ->
+                    if (calendar != null)
+                        DateHourHelper.getCalendarInDays(calendar) - DateHourHelper.getCurrentCalendarInDays()
+                    else
+                        0
+                Limits.INFINITELY -> 1
+                else -> 0
+            }
         return rest
     }
 
-    fun getTotalDaysFuture(): Long {
+    fun getTotalDaysFuture(calendar: Calendar?): Long {
         var rest = DateHourHelper.getCalendarInDays(clock_max_date_calendar) -
                 DateHourHelper.getCurrentCalendarInDays()
         if (rest == 0L)
-            rest = 2 /*Case that input a bad timestamp in millis */
+            rest = when (clock_max_date) {
+                Limits.TODAY ->
+                    if (calendar != null)
+                        DateHourHelper.getCurrentCalendarInDays() - DateHourHelper.getCalendarInDays(calendar)
+                    else
+                        0
+                Limits.INFINITELY -> 1
+                else -> 0
+            }
         return rest
     }
 
@@ -176,10 +195,11 @@ class PropertiesObject(var calendar: Calendar) {
         }
 
         fun getLimits(value: Int): Limits {
-            return when (value){
+            return when (value) {
                 0 -> Limits.TODAY
                 1 -> Limits.FUTURE
-                else -> Limits.PAST
+                2 -> Limits.PAST
+                else -> Limits.INFINITELY
             }
         }
     }
