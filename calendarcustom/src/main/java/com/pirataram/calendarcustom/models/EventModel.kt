@@ -10,13 +10,13 @@ data class EventModel(
     val id: Long,
     val startTime: Calendar,
     val endTime: Calendar,
-    val background: Int,
+    val background: Int?,
     val view: View,
     val classPojo: Any
 ) {
 
     constructor(id: Long, startTime: Long, endTime: Long, view: View, classPojo: Any): this(
-        id, getCalendar(startTime), getCalendar(endTime), 0, view, classPojo
+        id, getCalendar(startTime), getCalendar(endTime), null, view, classPojo
     )
 
     fun getDurationInMinutes(): Long =

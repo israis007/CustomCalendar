@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity() {
             override fun getActivity(): Activity = this@MainActivity
 
             override fun getCustomCalendarView(oneDayLayout: OneDayLayout) {
-                oneDayLayout.moveScrollUp()
+
             }
 
             override fun getAllCustomCalendarViews(arrayList: ArrayList<OneDayLayout>) {
@@ -146,6 +146,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val calMax = Calendar.getInstance(Locale.getDefault()).apply {
+            set(Calendar.DAY_OF_MONTH, get(Calendar.DAY_OF_MONTH) + 1)
+        }
+        val calMin = Calendar.getInstance(Locale.getDefault()).apply {
+            set(Calendar.DAY_OF_MONTH, get(Calendar.DAY_OF_MONTH) - 10)
+        }
+        relojito.setMaxDate(calMax)
+        relojito.setMinDate(calMin)
         relojito.addViewPagerListeners(eventos)
 
 //        if (savedInstanceState == null) {

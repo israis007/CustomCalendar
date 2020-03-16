@@ -3,6 +3,7 @@ package com.pirataram.calendarcustom.tools
 import android.util.Log
 import android.util.TimeUtils
 import com.pirataram.calendarcustom.BuildConfig
+import com.pirataram.calendarcustom.models.PropertiesObject
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -42,5 +43,21 @@ class DateHourHelper {
 
         fun getCurrentCalendarInDays(): Long =
             TimeUnit.MILLISECONDS.toDays(getCurrentCalendarWithoutHour().timeInMillis)
+
+        fun isToday(calendar: Calendar): Boolean =
+            getCalendarInDays(calendar) == getCurrentCalendarInDays()
+
+        fun isDayOf(calendar: Calendar): DAY_OF =
+            when {
+                getCalendarInDays(calendar) - getCurrentCalendarInDays() < 0 -> DAY_OF.PAST
+                getCalendarInDays(calendar) - getCurrentCalendarInDays() > 0 -> DAY_OF.FUTURE
+                else -> DAY_OF.TODAY
+            }
+
+        enum class DAY_OF {
+            PAST,
+            TODAY,
+            FUTURE
+        }
     }
 }
