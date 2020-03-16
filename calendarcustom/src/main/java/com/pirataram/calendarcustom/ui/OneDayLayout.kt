@@ -17,6 +17,7 @@ import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
+import androidx.core.view.marginTop
 import com.google.gson.Gson
 import com.pirataram.calendarcustom.R
 import com.pirataram.calendarcustom.models.DrawEventModel
@@ -38,6 +39,7 @@ class OneDayLayout @JvmOverloads constructor(
 
     private lateinit var proOb: PropertiesObject
     var calendar = Calendar.getInstance(Locale.getDefault())
+        private set
     private lateinit var linearEvents: LinearLayout
     private lateinit var linearNewEvents: OverLineDrawLayout
     private var lastCoorY = 0f
@@ -49,7 +51,11 @@ class OneDayLayout @JvmOverloads constructor(
     private var drawList = ArrayList<DrawEventModel>()
     private lateinit var clock: View
     private lateinit var coory: FloatArray
-    private var scroll = ScrollView(context) as android.widget.ScrollView
+    private var scroll = ScrollView(context)
+    private var relativeLayout = RelativeLayout(context)
+    private var scrollPosition = 0
+    private var lastHeight = 0
+    private var hourHeight = 0f
 
     constructor(context: Context, calendar: Calendar): this(context){
         this.calendar = calendar
@@ -180,6 +186,7 @@ class OneDayLayout @JvmOverloads constructor(
                 R.styleable.OneDayLayout_clock_events_padding_between,
                 reso.getDimension(R.dimen.clock_event_padding)
             )
+            hourHeight = proOb.clock_text_size + proOb.clock_text_margin_top
         }
 
         reCalcViews()
@@ -194,11 +201,11 @@ class OneDayLayout @JvmOverloads constructor(
                 val minValue = 3.0f
                 val maxValue = 9.0f
                 mScaleFactor = max(minValue, min(mScaleFactor, maxValue))
-                Log.d(TAG, "Scale factor calculated: $mScaleFactor -> lastValue: $lastValue")
 
                 var newValue = proOb.clock_text_margin_top
                 if (newValue >= proOb.clock_text_min_size &&
                     newValue <= proOb.clock_text_max_size) {
+
                     if (mScaleFactor == minValue || lastValue > mScaleFactor)
                         newValue -= mScaleFactor
                     else if (mScaleFactor == maxValue || lastValue < mScaleFactor)
@@ -211,9 +218,21 @@ class OneDayLayout @JvmOverloads constructor(
 
                     Constants.heightChange.value = newValue
                     proOb.clock_text_margin_top = newValue
-                    Log.d("CustomCalendar", "newValue = $newValue")
+
+                    hourHeight = proOb.clock_text_size + proOb.clock_text_margin_top
+
+                    val dm = DisplayMetrics()
+                    scroll.display.getMetrics(dm)
+                    val prevScrollY = lastHeight - dm.heightPixels
+                    val scrollableY = relativeLayout.height - dm.heightPixels
+                    val rest = ((scrollableY - prevScrollY) / mScaleFactor) / 2
+                    val foc = (detector.focusY + scrollPosition) / hourHeight
+                    hourHeight *= detector.currentSpanY / detector.previousSpanY
+                    scrollPosition = (foc * hourHeight - detector.focusY + rest).toInt()
+                    scroll.scrollTo(0, scrollPosition)
                 }
                 lastValue = abs(mScaleFactor)
+                lastHeight = relativeLayout.height
                 return true
             }
         })
@@ -222,7 +241,6 @@ class OneDayLayout @JvmOverloads constructor(
             val newValue = Constants.heightChange.value!!
             if (newValue > 0f) {
                 proOb.clock_text_margin_top = newValue
-                Log.d("CustomCalendar", "newValue = $newValue")
                 invalidate()
                 requestLayout()
                 printEvents()
@@ -250,7 +268,7 @@ class OneDayLayout @JvmOverloads constructor(
         linearEvents.id = View.generateViewId()
         linearEvents.orientation = LinearLayout.VERTICAL
         linearNewEvents.orientation = LinearLayout.VERTICAL
-        val relativeLayout = RelativeLayout(context)
+        relativeLayout = RelativeLayout(context)
         val lpClock = LayoutParams(
             LayoutParams.MATCH_PARENT,
             LayoutParams.WRAP_CONTENT
@@ -260,10 +278,6 @@ class OneDayLayout @JvmOverloads constructor(
         relativeLayout.addView(clock)
 
         calculateNewParams()
-
-        linearEvents.setOnClickListener {
-            
-        }
 
         linearEvents.setOnLongClickListener {
             Toast.makeText(context, DateHourFormatter.getStringFormatted(proOb.calendar, context.getString(R.string.date_mask)), Toast.LENGTH_SHORT).apply {
@@ -276,6 +290,11 @@ class OneDayLayout @JvmOverloads constructor(
 
         relativeLayout.addView(linearEvents)
         relativeLayout.addView(linearNewEvents)
+
+        scroll.onScrollChangeListener = {
+            scrollPosition = it
+            lastHeight = relativeLayout.height
+        }
 
         scroll.addView(relativeLayout)
 
@@ -308,16 +327,16 @@ class OneDayLayout @JvmOverloads constructor(
         linearNewEvents.layoutParams = lpLinearNewEvents
     }
 
-    fun addEvents(activity: Activity, listaEventos: ArrayList<EventModel>) {
+    fun addEvents(activity: Activity, eventList: ArrayList<EventModel>) {
         activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
         //Sort events according start time
-        Collections.sort(listaEventos, EventModel.EventModelComparator())
+        Collections.sort(eventList, EventModel.EventModelComparator())
         //Validating if twice or more events sharing time
         drawList = ArrayList()
-        repeat(listaEventos.size){
-            val newEventDraw = DrawEventModel(Constants.eventStart, Constants.colsStart, listaEventos[it])
+        repeat(eventList.size){
+            val newEventDraw = DrawEventModel(Constants.eventStart, Constants.colsStart, eventList[it])
             if (it == 0)
-                drawList.add(DrawEventModel(Constants.eventStart, Constants.colsStart, listaEventos[it]))
+                drawList.add(DrawEventModel(Constants.eventStart, Constants.colsStart, eventList[it]))
             else {
                 var isAdded = false
                 repeat(drawList.size){ it2 ->
@@ -377,14 +396,13 @@ class OneDayLayout @JvmOverloads constructor(
             run {
                 val view = element.eventModel.view
                 val color = element.eventModel.background
-                if (proOb.clock_events_filter_transparency && color != null && color > 0) {
-                    val transp = Color.argb(
-                        round(color.alpha * .8f).toInt(),
-                        color.red,
-                        color.green,
-                        color.blue
-                    )
-                    view.setBackgroundColor(transp)
+                if (proOb.clock_events_filter_transparency && color != null) {
+                        view.setBackgroundColor(Color.argb(
+                            round(color.alpha * .8f).toInt(),
+                            color.red,
+                            color.green,
+                            color.blue
+                        ))
                 }
                 val h1 = element.eventModel.startTime[Calendar.HOUR_OF_DAY] - proOb.clock_min_hour
                 val h2 = element.eventModel.endTime[Calendar.HOUR_OF_DAY] - proOb.clock_min_hour

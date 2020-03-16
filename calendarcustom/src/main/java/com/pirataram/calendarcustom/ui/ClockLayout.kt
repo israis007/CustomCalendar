@@ -25,7 +25,7 @@ class ClockLayout @JvmOverloads constructor(
     constructor(context: Context, propertiesObject: PropertiesObject) : this(context) {
         this.propertiesObject = propertiesObject
         _hourHeight = propertiesObject.clock_text_size
-        if (propertiesObject.clock_line_now_show_draw_on == PropertiesObject.Companion.Direction.DOWN) {
+        if (propertiesObject.clock_line_now_show_draw_on == PropertiesObject.Direction.DOWN) {
             Constants.calendarChanged.observeForever {
                 invalidate()
                 requestLayout()
@@ -121,7 +121,7 @@ class ClockLayout @JvmOverloads constructor(
             )
 
         //Draw Now Line
-        if (propertiesObject.clock_line_now_show_draw_on == PropertiesObject.Companion.Direction.DOWN &&
+        if (propertiesObject.clock_line_now_show_draw_on == PropertiesObject.Direction.DOWN &&
             propertiesObject.clock_line_now_show &&
             !propertiesObject.isOutOfHour() &&
             propertiesObject.isToday()

@@ -6,4 +6,6 @@
     <integer name="clock_min_hour">0</integer>
     <integer name="clock_worktime_max_hour">18</integer>
     <integer name="clock_worktime_min_hour">8</integer>
+    <integer name="cache_days">2</integer>
+    <integer name="cache_all_days">5</integer>
 </resources>

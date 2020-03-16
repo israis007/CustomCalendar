@@ -1,21 +1,18 @@
 package com.pirataram.calendarg.ui.main
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatTextView
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.pirataram.calendarcustom.models.EventModel
 import com.pirataram.calendarg.R
-import com.pirataram.calendarg.ui.main.adapter.EventData
+import com.pirataram.calendarg.ui.dummy.eventsDay3
 import kotlinx.android.synthetic.main.main_fragment.*
 import java.util.*
-import java.util.Comparator.comparing
 import kotlin.collections.ArrayList
 
 class MainFragment : Fragment() {
@@ -28,8 +25,10 @@ class MainFragment : Fragment() {
 
     private lateinit var viewModel: MainViewModel
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         return inflater.inflate(R.layout.main_fragment, container, false)
     }
 
@@ -37,7 +36,7 @@ class MainFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 //        val view = View.inflate(activity!!, R.layout.agenda_event_recycler_prototype, null)
-        val view = LayoutInflater.from(activity!!).inflate(R.layout.agenda_event_recycler_prototype, null)
+        /*val view = LayoutInflater.from(activity!!).inflate(R.layout.agenda_event_recycler_prototype, null)
         val cal1 = Calendar.getInstance(Locale.getDefault())
         cal1[Calendar.HOUR_OF_DAY] = 11
         cal1[Calendar.MINUTE] = 0
@@ -68,7 +67,7 @@ class MainFragment : Fragment() {
         listaEventos.add(EventData(1, "Simon el Gran Varón", "en la sala de un hospital", 2))
         listaEventos.add(EventData(2, "Ernesto", "no sé por donde viva", 2))
         listaEventos.add(EventData(3, "Pirata Ram", "Arquitectos 34, Escandón II Sección, Miguel Hidalgo, CDMX, México", 2))
-        listaEventos.add(EventData(4, "Mariana", "calle matamoros 23, Centro, Ciudad Sahagún, Hidalgo, México", 2))
+        listaEventos.add(EventData(4, "Mariana", "calle matamoros 23, Centro, Ciudad Sahagún, Hidalgo, México", 2))*/
 //        listaEventos.add(EventData(5, "Laura", "faraway Aguascalientes", 2))
 //        listaEventos.add(EventData(6, "Sandra García Magno", "oficina 27 piso 4", 2))
 //        val adapter = RecyclerAdapter(activity!!, listaEventos, object:
@@ -82,7 +81,7 @@ class MainFragment : Fragment() {
 //                return true
 //            }
 //        })
-        listaEventos.forEach { element -> run {
+        /*listaEventos.forEach { element -> run {
             val card = LayoutInflater.from(context).inflate(R.layout.customcard, null, false)
 
             card.setOnClickListener {
@@ -120,8 +119,36 @@ class MainFragment : Fragment() {
                 element
             ))
             }
+        }*/
+
+        val listaEventosPrint = ArrayList<EventModel>()
+        eventsDay3.forEach { element ->
+            run {
+                val card = LayoutInflater.from(context).inflate(R.layout.customcard, null, false)
+                val tv = card.findViewById<AppCompatTextView>(R.id.text_line_1)
+                card.setOnClickListener {
+                    Toast.makeText(
+                        context,
+                        "Click on view ${element.group.name}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                tv.text = ("${element.group.name} - ${element.place}")
+                listaEventosPrint.add(
+                    EventModel(
+                        Random().nextLong(),
+                        element.initTime,
+                        element.endTime,
+                        card,
+                        element
+                    )
+                )
+            }
         }
-        clock.addEvents(activity!!, listaEventosPrint)
+
+
+
+//        clock.addEvents(activity!!, listaEventosPrint)
     }
 
 }

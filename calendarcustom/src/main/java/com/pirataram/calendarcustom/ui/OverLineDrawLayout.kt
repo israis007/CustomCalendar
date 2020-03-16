@@ -18,7 +18,7 @@ class OverLineDrawLayout @JvmOverloads constructor(
 
     constructor(context: Context, propertiesObject: PropertiesObject): this(context){
         this.propertiesObject = propertiesObject
-        if (propertiesObject.clock_line_now_show_draw_on == PropertiesObject.Companion.Direction.UP) {
+        if (propertiesObject.clock_line_now_show_draw_on == PropertiesObject.Direction.UP) {
             Constants.calendarChanged.observeForever {
                 invalidate()
                 requestLayout()
@@ -45,7 +45,7 @@ class OverLineDrawLayout @JvmOverloads constructor(
             return
 
         //Draw Now Line
-        if (propertiesObject.clock_line_now_show_draw_on == PropertiesObject.Companion.Direction.UP &&
+        if (propertiesObject.clock_line_now_show_draw_on == PropertiesObject.Direction.UP &&
             propertiesObject.clock_line_now_show &&
             !propertiesObject.isOutOfHour() &&
             propertiesObject.isToday()

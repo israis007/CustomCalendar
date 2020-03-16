@@ -1,6 +1,7 @@
 package com.pirataram.calendarcustom.ui.viewpagercustom
 
 import android.content.Context
+import android.text.Layout
 import android.util.AttributeSet
 import android.util.Log
 import android.widget.RelativeLayout
@@ -8,10 +9,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.withStyledAttributes
 import androidx.viewpager.widget.ViewPager
 import com.google.gson.Gson
+import com.pirataram.calendarcustom.BuildConfig
 import com.pirataram.calendarcustom.R
 import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
+import com.pirataram.calendarcustom.tools.DateHourHelper
 import com.pirataram.calendarcustom.ui.OneDayLayout
+import java.lang.NumberFormatException
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -21,21 +25,25 @@ class ViewPagerCalendar @JvmOverloads constructor(
 
     private val TAG = "ViewPagerCalendar"
     private var selected: Int = 0
-    private val listDaysView = ArrayList<OneDayLayout>()
+    private var listDaysView = ArrayList<OneDayLayout>()
     private var viewPager: ViewPager = ViewPager(context)
     private lateinit var proOb: PropertiesObject
     private var viewPagerEvent: ViewPagerEvent? = null
+    private var today = 0
 
     init {
-        context.withStyledAttributes(attrs,
+        context.withStyledAttributes(
+            attrs,
             R.styleable.ViewPagerCalendar,
             defStyleAttr,
-            R.style.ViewPagerCalendar){
+            R.style.ViewPagerCalendar
+        ) {
             proOb = PropertiesObject(Calendar.getInstance())
             val reso = context.resources
             proOb.clock_background = getColor(
                 R.styleable.ViewPagerCalendar_clock_background,
-                ContextCompat.getColor(context, R.color.clock_background))
+                ContextCompat.getColor(context, R.color.clock_background)
+            )
             proOb.clock_text_show = getBoolean(R.styleable.ViewPagerCalendar_clock_text_show, true)
             proOb.clock_text_color = getColor(
                 R.styleable.ViewPagerCalendar_clock_text_color,
@@ -76,9 +84,16 @@ class ViewPagerCalendar @JvmOverloads constructor(
                 R.styleable.ViewPagerCalendar_clock_min_hour,
                 reso.getInteger(R.integer.clock_min_hour)
             )
-            proOb.clock_line_now_show_draw_on = PropertiesObject.getDirection(getInt(R.styleable.ViewPagerCalendar_clock_line_now_draw_on, 1))
-            proOb.clock_line_now_show_hour = getBoolean(R.styleable.ViewPagerCalendar_clock_line_now_show_hour, true)
-            proOb.clock_line_now_show = getBoolean(R.styleable.ViewPagerCalendar_clock_line_now_show, true)
+            proOb.clock_line_now_show_draw_on = PropertiesObject.getDirection(
+                getInt(
+                    R.styleable.ViewPagerCalendar_clock_line_now_draw_on,
+                    1
+                )
+            )
+            proOb.clock_line_now_show_hour =
+                getBoolean(R.styleable.ViewPagerCalendar_clock_line_now_show_hour, true)
+            proOb.clock_line_now_show =
+                getBoolean(R.styleable.ViewPagerCalendar_clock_line_now_show, true)
             proOb.clock_line_now_color = getColor(
                 R.styleable.ViewPagerCalendar_clock_line_now_color,
                 ContextCompat.getColor(context, R.color.clock_line_now)
@@ -139,24 +154,60 @@ class ViewPagerCalendar @JvmOverloads constructor(
                 R.styleable.ViewPagerCalendar_clock_events_padding_between,
                 reso.getDimension(R.dimen.clock_event_padding)
             )
+            proOb.clock_max_date = PropertiesObject.getLimits(
+                getInteger(
+                    R.styleable.ViewPagerCalendar_clock_max_date,
+                    3
+                )
+            )
+            proOb.clock_min_date = PropertiesObject.getLimits(
+                getInteger(
+                    R.styleable.ViewPagerCalendar_clock_min_date,
+                    3
+                )
+            )
+            var timeMax = getString(R.styleable.ViewPagerCalendar_clock_max_date_millis)
+            var timeMin = getString(R.styleable.ViewPagerCalendar_clock_min_date_millis)
+            val cal = DateHourHelper.getCurrentCalendarWithoutHour()
+            timeMax = if (!timeMax.isNullOrEmpty())
+                try {
+                    timeMax.trim().toLong().toString()
+                } catch (nb: NumberFormatException) {
+                    cal.timeInMillis.toString()
+                }
+            else
+                cal.timeInMillis.toString()
+            timeMin = if (!timeMin.isNullOrEmpty())
+                try {
+                    timeMin.trim().toLong().toString()
+                } catch (nb: NumberFormatException) {
+                    cal.timeInMillis.toString()
+                }
+            else
+                cal.timeInMillis.toString()
+            proOb.clock_max_date_calendar =
+                DateHourHelper.getCalendarWithoutHour(Calendar.getInstance(
+                    Locale.getDefault()
+                ).apply {
+                    timeInMillis = timeMax.toLong()
+                })
+            proOb.clock_min_date_calendar =
+                DateHourHelper.getCalendarWithoutHour(Calendar.getInstance(
+                    Locale.getDefault()
+                ).apply {
+                    timeInMillis = timeMin.toLong()
+                })
         }
 
-        Log.d(TAG, "Propiedades se van alv ===>>>: ${Gson().toJson(proOb)}")
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "Properties from XML ===>>>: ${Gson().toJson(proOb)}")
 
-        //Create a list of days to show in cache
-        val cal = Calendar.getInstance(Locale.getDefault())
-        listDaysView.add(getNewCalendar(cal, Direction.DOWN,  2))
-        listDaysView.add(getNewCalendar(cal, Direction.DOWN,  1))
-        listDaysView.add(OneDayLayout(context, proOb, cal))
-        listDaysView.add(getNewCalendar(cal, Direction.UP,  1))
-        listDaysView.add(getNewCalendar(cal, Direction.UP,  2))
+        comeBackToday()
 
         val lp = LayoutParams(
             LayoutParams.MATCH_PARENT,
             LayoutParams.MATCH_PARENT
         )
-
-        viewPager.adapter = ViewPagerAdapter(context, listDaysView)
 
         lp.addRule(ALIGN_PARENT_END, TRUE)
         lp.addRule(ALIGN_PARENT_TOP, TRUE)
@@ -167,34 +218,37 @@ class ViewPagerCalendar @JvmOverloads constructor(
 
         this.addView(viewPager)
 
-        viewPager.currentItem =
-            if (viewPagerEvent != null)
-                viewPagerEvent!!.selectPage()
-            else
-                2
-
         if (viewPagerEvent != null)
             viewPagerEvent!!.getAllCustomCalendarViews(listDaysView)
 
-        viewPager.addOnPageChangeListener(object: ViewPager.OnPageChangeListener{
+        viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {
-                if(state == 0){
-                    if (selected == listDaysView.size - 1) {
-                        addCalendar(selected, Direction.UP)
+                if (state == 0) {
+                    if (selected == listDaysView.size - 1 ) {
+                        addCalendar(selected, Direction.RIGHT)
                     } else if (selected == 0)
-                        addCalendar(selected, Direction.DOWN)
-                    val selectedDay = listDaysView[selected]
+                        addCalendar(selected, Direction.LEFT)
                     if (viewPagerEvent != null) {
+                        val selectedDay = listDaysView[selected]
                         viewPagerEvent!!.currentPage(selected)
                         viewPagerEvent!!.currentCalendar(selectedDay.calendar)
                         viewPagerEvent!!.getCustomCalendarView(selectedDay)
                         viewPagerEvent!!.getAllCustomCalendarViews(listDaysView)
                         if (viewPagerEvent!!.refreshEventsPreviousDay())
-                            listDaysView[selected - 1].addEvents(viewPagerEvent!!.getActivity(), viewPagerEvent!!.addEventsPreviousDay())
+                            listDaysView[selected - 1].addEvents(
+                                viewPagerEvent!!.getActivity(),
+                                viewPagerEvent!!.addEventsPreviousDay()
+                            )
                         if (viewPagerEvent!!.refreshEventsToday())
-                            selectedDay.addEvents(viewPagerEvent!!.getActivity(), viewPagerEvent!!.addEventsCurrentDay())
+                            selectedDay.addEvents(
+                                viewPagerEvent!!.getActivity(),
+                                viewPagerEvent!!.addEventsCurrentDay()
+                            )
                         if (viewPagerEvent!!.refreshEventsNextDay())
-                            listDaysView[selected + 1].addEvents(viewPagerEvent!!.getActivity(), viewPagerEvent!!.addEventsNextDay())
+                            listDaysView[selected + 1].addEvents(
+                                viewPagerEvent!!.getActivity(),
+                                viewPagerEvent!!.addEventsNextDay()
+                            )
                     }
                 }
             }
@@ -203,38 +257,91 @@ class ViewPagerCalendar @JvmOverloads constructor(
                 position: Int,
                 positionOffset: Float,
                 positionOffsetPixels: Int
-            ) {}
+            ) {
+            }
 
             override fun onPageSelected(position: Int) {
-                selected = position
+                selected = viewPager.currentItem
             }
         })
 
     }
 
-    fun addViewPagerListeners(viewPagerEvent: ViewPagerEvent){
+    fun addViewPagerListeners(viewPagerEvent: ViewPagerEvent) {
         this.viewPagerEvent = viewPagerEvent
-        val dp = listDaysView[1]
-        val dt = listDaysView[2]
-        val dn = listDaysView[3]
-        dp.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsPreviousDay())
-        dt.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsCurrentDay())
-        dn.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsNextDay())
+        var dp: OneDayLayout? = null
+        val dt: OneDayLayout
+        var df: OneDayLayout? = null
+        if (proOb.clock_max_date == PropertiesObject.Limits.TODAY && proOb.clock_min_date == PropertiesObject.Limits.TODAY) {
+            dt = listDaysView[0]
+        } else if (proOb.clock_max_date == PropertiesObject.Limits.TODAY && (proOb.clock_min_date == PropertiesObject.Limits.PAST || proOb.clock_min_date == PropertiesObject.Limits.INFINITELY)) {
+            dp = listDaysView[listDaysView.size - 2]
+            dt = listDaysView[listDaysView.size - 1]
+        }else if (proOb.clock_min_date == PropertiesObject.Limits.TODAY && (proOb.clock_max_date == PropertiesObject.Limits.FUTURE || proOb.clock_max_date == PropertiesObject.Limits.INFINITELY)) {
+            dt = listDaysView[0]
+            df = listDaysView[1]
+        } else { //******* INFINITELY TO THE TWO SIDES *******//
+            dp = listDaysView[1]
+            dt = listDaysView[2]
+            df = listDaysView[3]
+        }
+        if (dp != null && viewPagerEvent.refreshEventsPreviousDay())
+            dp.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsPreviousDay())
+
+        if (viewPagerEvent.refreshEventsToday())
+            dt.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsCurrentDay())
+
+        if (df != null && viewPagerEvent.refreshEventsNextDay())
+            df.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsNextDay())
+
     }
 
-    private fun addCalendar(position: Int, direction: Direction){
-        val cv = getNewCalendar(
-            listDaysView[position].calendar,
-            direction,
-            1
-        )
-        if (direction == Direction.UP) {
-            listDaysView.add(cv)
-            listDaysView.removeAt(0)
-        } else {
-            listDaysView.add(0, cv)
-            listDaysView.removeAt(listDaysView.size - 1)
+    private fun addCalendar(position: Int, direction: Direction) {
+        Log.d(TAG, "addCalendar $position -> $direction")
+        if (!(proOb.clock_max_date == PropertiesObject.Limits.TODAY &&
+                    proOb.clock_min_date == PropertiesObject.Limits.TODAY)) {
+            val cv = getNewCalendar(
+                listDaysView[position].calendar,
+                direction,
+                1
+            )
+
+            if (direction == Direction.LEFT){
+                when (proOb.clock_min_date){
+                    PropertiesObject.Limits.INFINITELY -> addOneDayLayout(cv, direction)
+                    PropertiesObject.Limits.TODAY -> {
+                        if (DateHourHelper.getCalendarInDays(cv.calendar) >= DateHourHelper.getCurrentCalendarInDays())
+                            addOneDayLayout(cv, direction)
+                    }
+                    else -> { //Have not FUTURE so, is the same case of PAST
+                        if (DateHourHelper.getCalendarInDays(cv.calendar) >= DateHourHelper.getCalendarInDays(proOb.clock_min_date_calendar))
+                            addOneDayLayout(cv, direction)
+                    }
+                }
+            }
+            if (direction == Direction.RIGHT){
+                when (proOb.clock_max_date){
+                    PropertiesObject.Limits.INFINITELY -> addOneDayLayout(cv, direction)
+                    PropertiesObject.Limits.TODAY -> {
+                        if (DateHourHelper.getCalendarInDays(cv.calendar) <= DateHourHelper.getCurrentCalendarInDays())
+                            addOneDayLayout(cv, direction)
+                    }
+                    else -> { //Have not PAST so, is the same case of FUTURE
+                        if (DateHourHelper.getCalendarInDays(cv.calendar) <= DateHourHelper.getCalendarInDays(proOb.clock_max_date_calendar))
+                            addOneDayLayout(cv, direction)
+                    }
+                }
+            }
         }
+    }
+
+    private fun addOneDayLayout(oneDayLayout: OneDayLayout, direction: Direction){
+        if (direction == Direction.LEFT)
+            listDaysView.add(0, oneDayLayout)
+        else
+            listDaysView.add(oneDayLayout)
+        if (listDaysView.size >= context.resources.getInteger(R.integer.cache_all_days))
+            listDaysView.removeAt(if (direction == Direction.RIGHT) 0 else listDaysView.size - 1)
         viewPager.adapter!!.notifyDataSetChanged()
     }
 
@@ -242,8 +349,8 @@ class ViewPagerCalendar @JvmOverloads constructor(
         val cal = Calendar.getInstance(Locale.getDefault())
         cal.timeInMillis = calendar.timeInMillis
 
-        repeat(times){
-            if (direction == Direction.UP)
+        repeat(times) {
+            if (direction == Direction.RIGHT)
                 cal[Calendar.DAY_OF_MONTH] += 1
             else
                 cal[Calendar.DAY_OF_MONTH] -= 1
@@ -286,8 +393,111 @@ class ViewPagerCalendar @JvmOverloads constructor(
     }
 
     private enum class Direction {
-        UP,
-        DOWN
+        RIGHT,
+        LEFT
+    }
+
+    private fun addPast(times: Int, cal: Calendar) {
+        repeat(times) {
+            listDaysView.add(0, getNewCalendar(cal, Direction.LEFT, it + 1))
+        }
+    }
+
+    private fun addFuture(times: Int, cal: Calendar) {
+        repeat(times) {
+            listDaysView.add(getNewCalendar(cal, Direction.RIGHT, it + 1))
+        }
+    }
+
+    fun comeBackToday() {
+        listDaysView = ArrayList()
+        //Create a list of days to show in cache
+        val cal = DateHourHelper.getCurrentCalendarWithoutHour()
+        val cache = context.resources.getInteger(R.integer.cache_days)
+        val daysPast = when (proOb.clock_min_date) {
+            PropertiesObject.Limits.TODAY -> 0
+            PropertiesObject.Limits.INFINITELY -> 5
+            else -> proOb.getTotalDaysPast(null).toInt()
+        }
+        val daysFuture = when (proOb.clock_max_date) {
+            PropertiesObject.Limits.TODAY -> 0
+            PropertiesObject.Limits.INFINITELY -> 5
+            else -> proOb.getTotalDaysFuture(null).toInt()
+        }
+
+        var times = if (daysPast > cache) cache else daysPast
+        if (times > 0)
+            addPast(times, cal)
+        today = listDaysView.size
+        listDaysView.add(OneDayLayout(context, proOb, cal)) //Add Today
+        times = if (daysFuture > cache) cache else daysFuture
+        if (times > 0)
+            addFuture(times, cal)
+
+        selected = today
+
+        viewPager.adapter = ViewPagerAdapter(context, listDaysView)
+
+        viewPager.currentItem = today
+
+        viewPager.adapter!!.notifyDataSetChanged()
+
+        if (this.viewPagerEvent != null) {
+            if (proOb.clock_max_date != PropertiesObject.Limits.TODAY && proOb.clock_min_date != PropertiesObject.Limits.TODAY) {
+                val restPast = proOb.getTotalDaysPast(null)
+                val restFuture = proOb.getTotalDaysFuture(null)
+                var vp: OneDayLayout? = null
+                val vt = listDaysView[today]
+                var vf: OneDayLayout? = null
+
+                if (restPast >= 1L) {
+                    vp = listDaysView[today - 1]
+                }
+                if (restFuture >= 1L)
+                    vf = listDaysView[today + 1]
+
+                if (vp != null && this.viewPagerEvent!!.refreshEventsPreviousDay())
+                    vp.addEvents(
+                        this.viewPagerEvent!!.getActivity(),
+                        this.viewPagerEvent!!.addEventsPreviousDay()
+                    )
+
+                if (this.viewPagerEvent!!.refreshEventsToday())
+                    vt.addEvents(
+                        this.viewPagerEvent!!.getActivity(),
+                        this.viewPagerEvent!!.addEventsCurrentDay()
+                    )
+
+                if (vf != null && this.viewPagerEvent!!.refreshEventsNextDay())
+                    vf.addEvents(
+                        this.viewPagerEvent!!.getActivity(),
+                        this.viewPagerEvent!!.addEventsNextDay()
+                    )
+
+            } else if (this.viewPagerEvent!!.refreshEventsToday()) {
+                listDaysView[0].addEvents(
+                    this.viewPagerEvent!!.getActivity(),
+                    this.viewPagerEvent!!.addEventsCurrentDay()
+                )
+            }
+        }
+    }
+
+    /**
+     * Consider that position will be minor of cache pages
+     */
+    fun moveToPage(position: Int) {
+        viewPager.currentItem = position
+    }
+
+    fun setMaxDate(cal: Calendar) {
+        this.proOb.clock_max_date_calendar = cal
+        comeBackToday()
+    }
+
+    fun setMinDate(cal: Calendar) {
+        this.proOb.clock_min_date_calendar = cal
+        comeBackToday()
     }
 
 }
