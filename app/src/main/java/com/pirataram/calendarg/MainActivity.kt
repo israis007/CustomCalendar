@@ -10,6 +10,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import com.pirataram.calendarcustom.models.EventModel
 import com.pirataram.calendarcustom.tools.DateHourFormatter
 import com.pirataram.calendarcustom.ui.OneDayLayout
+import com.pirataram.calendarcustom.ui.viewpagercustom.ViewPagerCalendar
 import com.pirataram.calendarcustom.ui.viewpagercustom.ViewPagerEvent
 import com.pirataram.calendarg.ui.dummy.eventsDay1
 import com.pirataram.calendarg.ui.dummy.eventsDay2
@@ -143,6 +144,10 @@ class MainActivity : AppCompatActivity() {
 
             override fun getAllCustomCalendarViews(arrayList: ArrayList<OneDayLayout>) {
                 listaCustomCalendar = arrayList
+            }
+
+            override fun getDirection(direction: ViewPagerCalendar.Direction) {
+
             }
         }
 

@@ -30,4 +30,6 @@ interface ViewPagerEvent {
 
     fun getAllCustomCalendarViews(arrayList: ArrayList<OneDayLayout>)
 
+    fun getDirection(direction: ViewPagerCalendar.Direction)
+
 }

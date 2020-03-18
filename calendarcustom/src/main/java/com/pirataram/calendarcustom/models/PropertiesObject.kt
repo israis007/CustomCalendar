@@ -2,10 +2,10 @@ package com.pirataram.calendarcustom.models
 
 import android.graphics.Paint
 import android.text.TextPaint
-import android.util.Log
 import com.google.gson.Gson
 import com.pirataram.calendarcustom.tools.DateHourFormatter
 import com.pirataram.calendarcustom.tools.DateHourHelper
+import java.text.DecimalFormat
 import java.util.*
 
 class PropertiesObject(var calendar: Calendar) {
@@ -157,35 +157,25 @@ class PropertiesObject(var calendar: Calendar) {
     }
 
     fun getTotalDaysPast(calendar: Calendar?): Long {
-        var rest = DateHourHelper.getCurrentCalendarInDays() -
-                DateHourHelper.getCalendarInDays(clock_min_date_calendar)
-        if (rest == 0L)
-            rest = when (clock_min_date) {
-                Limits.TODAY ->
-                    if (calendar != null)
-                        DateHourHelper.getCalendarInDays(calendar) - DateHourHelper.getCurrentCalendarInDays()
-                    else
-                        0
-                Limits.INFINITELY -> 1
-                else -> 0
+        return if (calendar == null)
+            when(clock_min_date){
+                Limits.TODAY -> 0L
+                Limits.INFINITELY -> Int.MAX_VALUE.toLong()
+                else -> DateHourHelper.getCurrentCalendarInDays() - DateHourHelper.getCalendarInDays(clock_min_date_calendar)
             }
-        return rest
+        else
+            DateHourHelper.getCalendarInDays(calendar) - DateHourHelper.getCalendarInDays(clock_min_date_calendar)
     }
 
     fun getTotalDaysFuture(calendar: Calendar?): Long {
-        var rest = DateHourHelper.getCalendarInDays(clock_max_date_calendar) -
-                DateHourHelper.getCurrentCalendarInDays()
-        if (rest == 0L)
-            rest = when (clock_max_date) {
-                Limits.TODAY ->
-                    if (calendar != null)
-                        DateHourHelper.getCurrentCalendarInDays() - DateHourHelper.getCalendarInDays(calendar)
-                    else
-                        0
-                Limits.INFINITELY -> 1
-                else -> 0
+        return if (calendar == null)
+            when(clock_max_date){
+                Limits.TODAY -> 0L
+                Limits.INFINITELY -> Int.MAX_VALUE.toLong()
+                else -> DateHourHelper.getCalendarInDays(clock_max_date_calendar) - DateHourHelper.getCurrentCalendarInDays()
             }
-        return rest
+        else
+            DateHourHelper.getCalendarInDays(clock_max_date_calendar) - DateHourHelper.getCalendarInDays(calendar)
     }
 
 
@@ -216,4 +206,64 @@ class PropertiesObject(var calendar: Calendar) {
         INFINITELY;
     }
 
+    fun getCoordinatesYEachQuarterOfHour(): FloatArray {
+        val array = FloatArray(getHoursToDraw() * 4)
+        val coorys = getCoorYToDrawHorizontalLines()
+        var contador = 0
+        for (i in 0 until coorys.size - 1){
+            var cy1 = coorys[i]
+            if (i == 0) {
+                array[contador] = cy1 * 0.25f
+                array[contador + 1] = cy1 * 0.50f
+                array[contador + 2] = cy1 * 0.75f
+                array[contador + 3] = cy1
+            } else {
+                cy1 = coorys[i - 1]
+                val cy2 = coorys[i]
+                val rest = cy2 - cy1
+                array[contador] = rest * 0.25f + cy1
+                array[contador + 1] = rest * 0.50f + cy1
+                array[contador + 2] = rest * 0.75f + cy1
+                array[contador + 3] = cy2
+            }
+            contador += 4
+        }
+        return array
+    }
+
+    fun getCoorYNewEvent(coorY: Float, cal: Calendar): CoorYNewEvent? {
+        val coorys = getCoordinatesYEachQuarterOfHour()
+        var tempY = 0f
+        for (i in coorys.indices){
+            if (coorys[i] > coorY) {
+                val hours = i.toFloat() / 4f
+                val hour = DecimalFormat("#.0").format(hours).toDouble().toInt()
+                val min = (i - hour * 4) * 15
+                val minutes = if (min == 60) 0 else min
+                val calendar = Calendar.getInstance(Locale.getDefault()).apply {
+                    time.time = cal.time.time
+                    set(Calendar.HOUR_OF_DAY, clock_min_hour)
+                }
+                repeat(hour - 1){
+                    calendar[Calendar.HOUR_OF_DAY] += 1
+                }
+                calendar[Calendar.MINUTE] = minutes
+                return CoorYNewEvent(
+                    coorys[i - if (i == 0) 0 else 3],
+                    coorys[i + if (i == 3) 0 else 1],
+                    calendar,
+                    calendar[Calendar.HOUR_OF_DAY] in (clock_worktime_min_hour + 1) until clock_worktime_max_hour
+                )
+            } else
+                tempY = coorys[i]
+        }
+        return null
+    }
+
+    data class CoorYNewEvent (
+        val coorY: Float,
+        val coorYOneHourBefore: Float,
+        val dateSelected: Calendar,
+        val isInWorkTime: Boolean
+    )
 }

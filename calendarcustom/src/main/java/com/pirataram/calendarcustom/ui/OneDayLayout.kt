@@ -1,8 +1,10 @@
 package com.pirataram.calendarcustom.ui
 
 import android.app.Activity
+import android.content.ClipData
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Point
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.Log
@@ -11,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import androidx.core.content.withStyledAttributes
 import androidx.core.graphics.alpha
@@ -25,6 +28,7 @@ import com.pirataram.calendarcustom.models.EventModel
 import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
 import com.pirataram.calendarcustom.tools.DateHourFormatter
+import com.pirataram.calendarcustom.tools.DateHourHelper
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.abs
@@ -56,6 +60,10 @@ class OneDayLayout @JvmOverloads constructor(
     private var scrollPosition = 0
     private var lastHeight = 0
     private var hourHeight = 0f
+    private var newEventCard: View? = null
+    private var isShowingNewEvent = false
+    private var cX = 0f
+    private var cY = 0f
 
     constructor(context: Context, calendar: Calendar): this(context){
         this.calendar = calendar
@@ -67,7 +75,6 @@ class OneDayLayout @JvmOverloads constructor(
         this.calendar = calendar
         this.proOb = propertiesObject
         this.proOb.calendar = calendar
-        Log.d(TAG, "Propiedades: ${Gson().toJson(proOb)}")
         reCalcViews()
     }
 
@@ -285,6 +292,24 @@ class OneDayLayout @JvmOverloads constructor(
                 val tv = this.view.findViewById<TextView>(android.R.id.message)
                 tv.textSize = proOb.clock_text_size
             }.show()
+
+            calculateNewLP()
+
+            val clipData = ClipData.newPlainText("","")
+            val shadowBuilder = MyDragShadowBuilder(newEventCard!!)
+
+            newEventCard!!.startDrag(clipData, shadowBuilder, it, 0)
+            true
+        }
+
+        linearNewEvents.setOnDragListener { _, event ->
+            cY = event.y
+            if (cY > 0) {
+                Log.d(TAG, "Positions drag ***** ${event.y}")
+                calculateNewLP()
+                linearNewEvents.invalidate()
+                linearNewEvents.requestLayout()
+            }
             true
         }
 
@@ -302,6 +327,35 @@ class OneDayLayout @JvmOverloads constructor(
 
         setBackgroundColor(proOb.clock_background)
 
+    }
+
+    private fun calculateNewLP(){
+        if (newEventCard != null)
+            linearNewEvents.removeView(newEventCard)
+        val obj = proOb.getCoorYNewEvent(cY, proOb.calendar)!!
+        newEventCard = LayoutInflater.from(context).inflate(R.layout.events_view, null, false)
+        val textHour = newEventCard!!.findViewById<AppCompatTextView>(R.id.cad_hours)
+        val cl = Calendar.getInstance(Locale.getDefault()).apply {
+            set(Calendar.YEAR, obj.dateSelected[Calendar.YEAR])
+            set(Calendar.MONTH, obj.dateSelected[Calendar.MONTH])
+            set(Calendar.DAY_OF_YEAR, obj.dateSelected[Calendar.DAY_OF_YEAR])
+            set(Calendar.DAY_OF_MONTH, obj.dateSelected[Calendar.DAY_OF_MONTH])
+            set(Calendar.DAY_OF_WEEK, obj.dateSelected[Calendar.DAY_OF_WEEK])
+            set(Calendar.HOUR_OF_DAY, obj.dateSelected[Calendar.HOUR_OF_DAY] + 1)
+            set(Calendar.MINUTE, obj.dateSelected[Calendar.MINUTE])
+            set(Calendar.SECOND, obj.dateSelected[Calendar.SECOND])
+            set(Calendar.MILLISECOND, obj.dateSelected[Calendar.MILLISECOND])
+        }
+
+        textHour.text = ("${DateHourFormatter.getStringFormatted(obj.dateSelected, proOb.clock_text_mask)} - ${DateHourFormatter.getStringFormatted(cl, proOb.clock_text_mask)}")
+        val lp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            (obj.coorYOneHourBefore - obj.coorY).toInt()
+        )
+        val marg = (proOb.getCoorXToDrawVerticalLine() - proOb.getCoorXToDrawHorizontalLines()).toInt()
+        lp.setMargins((marg + proOb.getCoorXToDrawVerticalLine()).toInt(), obj.coorY.toInt(), marg, 0)
+        newEventCard!!.layoutParams = lp
+        linearNewEvents.addView(newEventCard)
     }
 
     private fun calculateNewParams(){
@@ -450,7 +504,12 @@ class OneDayLayout @JvmOverloads constructor(
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
-        scaleDetector.onTouchEvent(ev)
+        if (ev != null) {
+            cX = ev.x
+            cY = ev.y + scrollPosition
+            scaleDetector.onTouchEvent(ev)
+//            Log.d(TAG, "Coordenadas evento: X-> $cX  Y -> $cY")
+        }
         return super.dispatchTouchEvent(ev)
     }
 
