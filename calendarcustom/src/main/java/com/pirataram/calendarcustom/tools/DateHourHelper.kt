@@ -54,6 +54,19 @@ class DateHourHelper {
                 else -> DAY_OF.TODAY
             }
 
+        fun cloneCalendar(calendar: Calendar): Calendar =
+            Calendar.getInstance(Locale.getDefault()).apply {
+                set(Calendar.YEAR, calendar[Calendar.YEAR])
+                set(Calendar.MONTH, calendar[Calendar.MONTH])
+                set(Calendar.DAY_OF_YEAR, calendar[Calendar.DAY_OF_YEAR])
+                set(Calendar.DAY_OF_MONTH, calendar[Calendar.DAY_OF_MONTH])
+                set(Calendar.DAY_OF_WEEK, calendar[Calendar.DAY_OF_WEEK])
+                set(Calendar.HOUR_OF_DAY, calendar[Calendar.HOUR_OF_DAY])
+                set(Calendar.MINUTE, calendar[Calendar.MINUTE])
+                set(Calendar.SECOND, calendar[Calendar.SECOND])
+                set(Calendar.MILLISECOND, calendar[Calendar.MILLISECOND])
+            }
+
         enum class DAY_OF {
             PAST,
             TODAY,

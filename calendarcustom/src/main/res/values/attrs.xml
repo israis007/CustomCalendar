@@ -112,5 +112,11 @@
         </attr>
         <attr name="clock_max_date_millis" format="string" />
         <attr name="clock_min_date_millis" format="string" />
+        <attr name="clock_create_event_enable" format="boolean" />
+        <attr name="clock_create_event_space" format="enum">
+            <enum name="allTime" value="0" />
+            <enum name="workingTime" value="1" />
+        </attr>
+        <attr name="clock_create_event_enable_toast" format="boolean" />
     </declare-styleable>
 </resources>

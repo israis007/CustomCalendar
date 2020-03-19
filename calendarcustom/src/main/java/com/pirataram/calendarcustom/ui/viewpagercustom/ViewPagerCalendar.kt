@@ -3,6 +3,7 @@ package com.pirataram.calendarcustom.ui.viewpagercustom
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
+import android.view.View
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.withStyledAttributes
@@ -14,6 +15,7 @@ import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
 import com.pirataram.calendarcustom.tools.DateHourHelper
 import com.pirataram.calendarcustom.ui.OneDayLayout
+import com.pirataram.calendarcustom.ui.OneLayoutEvent
 import java.lang.Exception
 import java.lang.NumberFormatException
 import java.util.*
@@ -166,6 +168,9 @@ class ViewPagerCalendar @JvmOverloads constructor(
                     3
                 )
             )
+            proOb.clock_create_event_enable = getBoolean(R.styleable.ViewPagerCalendar_clock_create_event_enable, true)
+            proOb.clock_create_event_enable_toast = getBoolean(R.styleable.ViewPagerCalendar_clock_create_event_enable_toast, true)
+            proOb.clock_create_event_space = PropertiesObject.getSpaceEvent(getInteger(R.styleable.ViewPagerCalendar_clock_create_event_space, 0))
             var timeMax = getString(R.styleable.ViewPagerCalendar_clock_max_date_millis)
             var timeMin = getString(R.styleable.ViewPagerCalendar_clock_min_date_millis)
             val cal = DateHourHelper.getCurrentCalendarWithoutHour()
@@ -298,10 +303,16 @@ class ViewPagerCalendar @JvmOverloads constructor(
         if (df != null && viewPagerEvent.refreshEventsNextDay())
             df.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsNextDay())
 
+        proOb.oneLayoutEvent = object: OneLayoutEvent {
+            override fun endDrag(startDate: Calendar, endTime: Calendar) {
+                viewPagerEvent.onEventCreated(startDate, endTime)
+            }
+        }
+
+        recreateCache(null)
     }
 
     private fun addCalendar(position: Int, direction: Direction) {
-        Log.d(TAG, "addCalendar $position -> $direction")
         if (!(proOb.clock_max_date == PropertiesObject.Limits.TODAY &&
                     proOb.clock_min_date == PropertiesObject.Limits.TODAY)) {
             val cv = getNewCalendar(
@@ -391,6 +402,13 @@ class ViewPagerCalendar @JvmOverloads constructor(
             clock_events_filter_transparency = proOb.clock_events_filter_transparency
             clock_events_opacity_percent = proOb.clock_events_opacity_percent
             clock_events_padding_between = proOb.clock_events_padding_between
+            clock_max_date = proOb.clock_max_date
+            clock_min_date = proOb.clock_min_date
+            clock_max_date_calendar = proOb.clock_max_date_calendar
+            clock_min_date_calendar = proOb.clock_min_date_calendar
+            clock_create_event_enable = proOb.clock_create_event_enable
+            clock_create_event_space = proOb.clock_create_event_space
+            clock_create_event_enable_toast = proOb.clock_create_event_enable_toast
         }
         prop.calendar = cal
         return OneDayLayout(context, prop, cal)
@@ -538,6 +556,11 @@ class ViewPagerCalendar @JvmOverloads constructor(
 
     fun setMinDate(cal: Calendar) {
         this.proOb.clock_min_date_calendar = cal
+        recreateCache(null)
+    }
+
+    fun setViewNewEvent(view: View){
+        this.proOb.viewNewEvent = view
         recreateCache(null)
     }
 

@@ -4,11 +4,12 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Point
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
+import android.view.DragEvent.ACTION_DRAG_ENDED
+import android.view.DragEvent.ACTION_DRAG_STARTED
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
@@ -20,15 +21,12 @@ import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
-import androidx.core.view.marginTop
-import com.google.gson.Gson
 import com.pirataram.calendarcustom.R
 import com.pirataram.calendarcustom.models.DrawEventModel
 import com.pirataram.calendarcustom.models.EventModel
 import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
 import com.pirataram.calendarcustom.tools.DateHourFormatter
-import com.pirataram.calendarcustom.tools.DateHourHelper
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.abs
@@ -61,17 +59,19 @@ class OneDayLayout @JvmOverloads constructor(
     private var lastHeight = 0
     private var hourHeight = 0f
     private var newEventCard: View? = null
-    private var isShowingNewEvent = false
+    private var coorsNewEvent: PropertiesObject.CoorYNewEvent? = null
     private var cX = 0f
     private var cY = 0f
 
-    constructor(context: Context, calendar: Calendar): this(context){
+    constructor(context: Context, calendar: Calendar) : this(context) {
         this.calendar = calendar
         proOb.calendar = calendar
         reCalcViews()
     }
 
-    constructor(context: Context, propertiesObject: PropertiesObject, calendar: Calendar): this(context){
+    constructor(context: Context, propertiesObject: PropertiesObject, calendar: Calendar) : this(
+        context
+    ) {
         this.calendar = calendar
         this.proOb = propertiesObject
         this.proOb.calendar = calendar
@@ -89,7 +89,8 @@ class OneDayLayout @JvmOverloads constructor(
             val reso = context.resources
             proOb.clock_background = getColor(
                 R.styleable.OneDayLayout_clock_background,
-                ContextCompat.getColor(context, R.color.clock_background))
+                ContextCompat.getColor(context, R.color.clock_background)
+            )
             proOb.clock_text_show = getBoolean(R.styleable.OneDayLayout_clock_text_show, true)
             proOb.clock_text_color = getColor(
                 R.styleable.OneDayLayout_clock_text_color,
@@ -130,9 +131,16 @@ class OneDayLayout @JvmOverloads constructor(
                 R.styleable.OneDayLayout_clock_min_hour,
                 reso.getInteger(R.integer.clock_min_hour)
             )
-            proOb.clock_line_now_show_draw_on = PropertiesObject.getDirection(getInt(R.styleable.OneDayLayout_clock_line_now_draw_on, 1))
-            proOb.clock_line_now_show_hour = getBoolean(R.styleable.OneDayLayout_clock_line_now_show_hour, true)
-            proOb.clock_line_now_show = getBoolean(R.styleable.OneDayLayout_clock_line_now_show, true)
+            proOb.clock_line_now_show_draw_on = PropertiesObject.getDirection(
+                getInt(
+                    R.styleable.OneDayLayout_clock_line_now_draw_on,
+                    1
+                )
+            )
+            proOb.clock_line_now_show_hour =
+                getBoolean(R.styleable.OneDayLayout_clock_line_now_show_hour, true)
+            proOb.clock_line_now_show =
+                getBoolean(R.styleable.OneDayLayout_clock_line_now_show, true)
             proOb.clock_line_now_color = getColor(
                 R.styleable.OneDayLayout_clock_line_now_color,
                 ContextCompat.getColor(context, R.color.clock_line_now)
@@ -198,51 +206,54 @@ class OneDayLayout @JvmOverloads constructor(
 
         reCalcViews()
 
-        scaleDetector = ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+        scaleDetector = ScaleGestureDetector(
+            context,
+            object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
 
-            override fun onScale(detector: ScaleGestureDetector?): Boolean {
-                if (detector == null)
-                    return false
+                override fun onScale(detector: ScaleGestureDetector?): Boolean {
+                    if (detector == null)
+                        return false
 
-                mScaleFactor *= detector.scaleFactor
-                val minValue = 3.0f
-                val maxValue = 9.0f
-                mScaleFactor = max(minValue, min(mScaleFactor, maxValue))
+                    mScaleFactor *= detector.scaleFactor
+                    val minValue = 3.0f
+                    val maxValue = 9.0f
+                    mScaleFactor = max(minValue, min(mScaleFactor, maxValue))
 
-                var newValue = proOb.clock_text_margin_top
-                if (newValue >= proOb.clock_text_min_size &&
-                    newValue <= proOb.clock_text_max_size) {
+                    var newValue = proOb.clock_text_margin_top
+                    if (newValue >= proOb.clock_text_min_size &&
+                        newValue <= proOb.clock_text_max_size
+                    ) {
 
-                    if (mScaleFactor == minValue || lastValue > mScaleFactor)
-                        newValue -= mScaleFactor
-                    else if (mScaleFactor == maxValue || lastValue < mScaleFactor)
-                        newValue += mScaleFactor
+                        if (mScaleFactor == minValue || lastValue > mScaleFactor)
+                            newValue -= mScaleFactor
+                        else if (mScaleFactor == maxValue || lastValue < mScaleFactor)
+                            newValue += mScaleFactor
 
-                    if (newValue <= proOb.clock_text_min_size)
-                        newValue = proOb.clock_text_min_size
-                    if (newValue >= proOb.clock_text_max_size)
-                        newValue = proOb.clock_text_max_size
+                        if (newValue <= proOb.clock_text_min_size)
+                            newValue = proOb.clock_text_min_size
+                        if (newValue >= proOb.clock_text_max_size)
+                            newValue = proOb.clock_text_max_size
 
-                    Constants.heightChange.value = newValue
-                    proOb.clock_text_margin_top = newValue
+                        Constants.heightChange.value = newValue
+                        proOb.clock_text_margin_top = newValue
 
-                    hourHeight = proOb.clock_text_size + proOb.clock_text_margin_top
+                        hourHeight = proOb.clock_text_size + proOb.clock_text_margin_top
 
-                    val dm = DisplayMetrics()
-                    scroll.display.getMetrics(dm)
-                    val prevScrollY = lastHeight - dm.heightPixels
-                    val scrollableY = relativeLayout.height - dm.heightPixels
-                    val rest = ((scrollableY - prevScrollY) / mScaleFactor) / 2
-                    val foc = (detector.focusY + scrollPosition) / hourHeight
-                    hourHeight *= detector.currentSpanY / detector.previousSpanY
-                    scrollPosition = (foc * hourHeight - detector.focusY + rest).toInt()
-                    scroll.scrollTo(0, scrollPosition)
+                        val dm = DisplayMetrics()
+                        scroll.display.getMetrics(dm)
+                        val prevScrollY = lastHeight - dm.heightPixels
+                        val scrollableY = relativeLayout.height - dm.heightPixels
+                        val rest = ((scrollableY - prevScrollY) / mScaleFactor) / 2
+                        val foc = (detector.focusY + scrollPosition) / hourHeight
+                        hourHeight *= detector.currentSpanY / detector.previousSpanY
+                        scrollPosition = (foc * hourHeight - detector.focusY + rest).toInt()
+                        scroll.scrollTo(0, scrollPosition)
+                    }
+                    lastValue = abs(mScaleFactor)
+                    lastHeight = relativeLayout.height
+                    return true
                 }
-                lastValue = abs(mScaleFactor)
-                lastHeight = relativeLayout.height
-                return true
-            }
-        })
+            })
 
         Constants.heightChange.observeForever {
             val newValue = Constants.heightChange.value!!
@@ -255,7 +266,7 @@ class OneDayLayout @JvmOverloads constructor(
         }
     }
 
-    private fun reCalcViews(){
+    private fun reCalcViews() {
         removeAllViews()
         scroll = ScrollView(context)
         val scrollParams = LayoutParams(
@@ -286,31 +297,63 @@ class OneDayLayout @JvmOverloads constructor(
 
         calculateNewParams()
 
-        linearEvents.setOnLongClickListener {
-            Toast.makeText(context, DateHourFormatter.getStringFormatted(proOb.calendar, context.getString(R.string.date_mask)), Toast.LENGTH_SHORT).apply {
-                setGravity(Gravity.TOP, 0,0)
-                val tv = this.view.findViewById<TextView>(android.R.id.message)
-                tv.textSize = proOb.clock_text_size
-            }.show()
+        if (proOb.clock_create_event_enable) {
+            linearEvents.setOnLongClickListener {
+                if (proOb.clock_create_event_enable_toast) {
+                    Toast.makeText(
+                        context,
+                        DateHourFormatter.getStringFormatted(
+                            proOb.calendar,
+                            context.getString(R.string.date_mask)
+                        ),
+                        Toast.LENGTH_SHORT
+                    ).apply {
+                        setGravity(Gravity.TOP, 0, 0)
+                        val tv = this.view.findViewById<TextView>(android.R.id.message)
+                        tv.textSize = proOb.clock_text_size
+                    }.show()
+                }
 
-            calculateNewLP()
-
-            val clipData = ClipData.newPlainText("","")
-            val shadowBuilder = MyDragShadowBuilder(newEventCard!!)
-
-            newEventCard!!.startDrag(clipData, shadowBuilder, it, 0)
-            true
-        }
-
-        linearNewEvents.setOnDragListener { _, event ->
-            cY = event.y
-            if (cY > 0) {
-                Log.d(TAG, "Positions drag ***** ${event.y}")
                 calculateNewLP()
-                linearNewEvents.invalidate()
-                linearNewEvents.requestLayout()
+
+                val clipData = ClipData.newPlainText("", "")
+                val shadowBuilder = MyDragShadowBuilder(newEventCard!!)
+
+                newEventCard!!.startDrag(clipData, shadowBuilder, it, 0)
+                true
             }
-            true
+
+            linearNewEvents.setOnDragListener { _, event ->
+                if (proOb.clock_create_event_space == PropertiesObject.SpacesEvent.ALLTIME) {
+                    if (cY - event.y < 800) /*Number 800 is to controle a distance when the user keep swipe down, even under navbar*/
+                        cY = event.y
+                } else
+                    cY = event.y
+
+                if (cY > 0) {
+                    calculateNewLP()
+                    linearNewEvents.invalidate()
+                    linearNewEvents.requestLayout()
+                }
+
+                if (event.action == ACTION_DRAG_ENDED) {
+                    if (coorsNewEvent == null) {
+                        Toast.makeText(this@OneDayLayout.context, when(proOb.clock_create_event_space){
+                            PropertiesObject.SpacesEvent.OUTWORKING -> this@OneDayLayout.context.getString(R.string.clock_message_error_outworking)
+                            PropertiesObject.SpacesEvent.WORKING -> this@OneDayLayout.context.getString(R.string.clock_message_error_working)
+                            PropertiesObject.SpacesEvent.ALLTIME -> this@OneDayLayout.context.getString(R.string.clock_message_error_alltime)
+                        }, Toast.LENGTH_LONG).show()
+                    } else {
+                        if (proOb.oneLayoutEvent != null)
+                            proOb.oneLayoutEvent!!.endDrag(
+                                coorsNewEvent!!.startDate,
+                                coorsNewEvent!!.endDate
+                            )
+                            linearNewEvents.removeView(newEventCard)
+                    }
+                }
+                true
+            }
         }
 
         relativeLayout.addView(linearEvents)
@@ -329,36 +372,43 @@ class OneDayLayout @JvmOverloads constructor(
 
     }
 
-    private fun calculateNewLP(){
+    private fun calculateNewLP() {
         if (newEventCard != null)
             linearNewEvents.removeView(newEventCard)
-        val obj = proOb.getCoorYNewEvent(cY, proOb.calendar)!!
-        newEventCard = LayoutInflater.from(context).inflate(R.layout.events_view, null, false)
-        val textHour = newEventCard!!.findViewById<AppCompatTextView>(R.id.cad_hours)
-        val cl = Calendar.getInstance(Locale.getDefault()).apply {
-            set(Calendar.YEAR, obj.dateSelected[Calendar.YEAR])
-            set(Calendar.MONTH, obj.dateSelected[Calendar.MONTH])
-            set(Calendar.DAY_OF_YEAR, obj.dateSelected[Calendar.DAY_OF_YEAR])
-            set(Calendar.DAY_OF_MONTH, obj.dateSelected[Calendar.DAY_OF_MONTH])
-            set(Calendar.DAY_OF_WEEK, obj.dateSelected[Calendar.DAY_OF_WEEK])
-            set(Calendar.HOUR_OF_DAY, obj.dateSelected[Calendar.HOUR_OF_DAY] + 1)
-            set(Calendar.MINUTE, obj.dateSelected[Calendar.MINUTE])
-            set(Calendar.SECOND, obj.dateSelected[Calendar.SECOND])
-            set(Calendar.MILLISECOND, obj.dateSelected[Calendar.MILLISECOND])
-        }
+        coorsNewEvent = proOb.getCoorYNewEvent(cY, proOb.calendar)
+        if (coorsNewEvent == null)
+            return
 
-        textHour.text = ("${DateHourFormatter.getStringFormatted(obj.dateSelected, proOb.clock_text_mask)} - ${DateHourFormatter.getStringFormatted(cl, proOb.clock_text_mask)}")
+        if (proOb.viewNewEvent != null)
+            newEventCard = proOb.viewNewEvent
+        else {
+            newEventCard = LayoutInflater.from(context).inflate(R.layout.events_view, null, false)
+            val textHour = newEventCard!!.findViewById<AppCompatTextView>(R.id.cad_hours)
+            textHour.text = ("${DateHourFormatter.getStringFormatted(
+                coorsNewEvent!!.startDate,
+                proOb.clock_text_mask
+            )} - ${DateHourFormatter.getStringFormatted(
+                coorsNewEvent!!.endDate,
+                proOb.clock_text_mask
+            )}")
+        }
         val lp = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
-            (obj.coorYOneHourBefore - obj.coorY).toInt()
+            (coorsNewEvent!!.coorYOneHourBefore - coorsNewEvent!!.coorY).toInt()
         )
-        val marg = (proOb.getCoorXToDrawVerticalLine() - proOb.getCoorXToDrawHorizontalLines()).toInt()
-        lp.setMargins((marg + proOb.getCoorXToDrawVerticalLine()).toInt(), obj.coorY.toInt(), marg, 0)
+        val marg =
+            (proOb.getCoorXToDrawVerticalLine() - proOb.getCoorXToDrawHorizontalLines()).toInt()
+        lp.setMargins(
+            (marg + proOb.getCoorXToDrawVerticalLine()).toInt(),
+            coorsNewEvent!!.coorY.toInt(),
+            marg,
+            0
+        )
         newEventCard!!.layoutParams = lp
         linearNewEvents.addView(newEventCard)
     }
 
-    private fun calculateNewParams(){
+    private fun calculateNewParams() {
         //Calculates margin start and height
         coory = proOb.getCoorYToDrawHorizontalLines()
         val lpLinearEvents = LayoutParams(
@@ -387,13 +437,20 @@ class OneDayLayout @JvmOverloads constructor(
         Collections.sort(eventList, EventModel.EventModelComparator())
         //Validating if twice or more events sharing time
         drawList = ArrayList()
-        repeat(eventList.size){
-            val newEventDraw = DrawEventModel(Constants.eventStart, Constants.colsStart, eventList[it])
+        repeat(eventList.size) {
+            val newEventDraw =
+                DrawEventModel(Constants.eventStart, Constants.colsStart, eventList[it])
             if (it == 0)
-                drawList.add(DrawEventModel(Constants.eventStart, Constants.colsStart, eventList[it]))
+                drawList.add(
+                    DrawEventModel(
+                        Constants.eventStart,
+                        Constants.colsStart,
+                        eventList[it]
+                    )
+                )
             else {
                 var isAdded = false
-                repeat(drawList.size){ it2 ->
+                repeat(drawList.size) { it2 ->
                     run {
                         val eventAdded = drawList[it2]
                         newEventDraw.cols = eventAdded.cols
@@ -403,11 +460,13 @@ class OneDayLayout @JvmOverloads constructor(
                             newEventDraw.cols++
                             newEventDraw.events++
                             //Buscar si el evento ya fue agregado
-                            drawList.forEach { event -> run {
-                                if (event.eventModel.id == newEventDraw.eventModel.id){
-                                    isAdded = true
+                            drawList.forEach { event ->
+                                run {
+                                    if (event.eventModel.id == newEventDraw.eventModel.id) {
+                                        isAdded = true
+                                    }
                                 }
-                            } }
+                            }
                             if (!isAdded) {
                                 drawList.add(newEventDraw)
                                 isAdded = true
@@ -415,7 +474,7 @@ class OneDayLayout @JvmOverloads constructor(
                         }
                     }
                 }
-                if (!isAdded){
+                if (!isAdded) {
                     newEventDraw.cols = Constants.colsStart
                     newEventDraw.events = Constants.eventStart
                     drawList.add(newEventDraw)
@@ -426,8 +485,9 @@ class OneDayLayout @JvmOverloads constructor(
         drawList.forEach {
             if (it.eventModel.startTime[Calendar.HOUR_OF_DAY] < proOb.clock_min_hour ||
                 it.eventModel.startTime[Calendar.HOUR_OF_DAY] > proOb.clock_max_hour ||
-                it.eventModel.endTime[Calendar.HOUR_OF_DAY] > proOb.clock_max_hour)
-            drawList.remove(it)
+                it.eventModel.endTime[Calendar.HOUR_OF_DAY] > proOb.clock_max_hour
+            )
+                drawList.remove(it)
         }
         //Remove Parents
         drawList.forEach {
@@ -439,7 +499,7 @@ class OneDayLayout @JvmOverloads constructor(
         printEvents()
     }
 
-    private fun printEvents(){
+    private fun printEvents() {
         lastCoorY = 0f
         //Remove all views
         linearEvents.removeAllViews()
@@ -451,12 +511,14 @@ class OneDayLayout @JvmOverloads constructor(
                 val view = element.eventModel.view
                 val color = element.eventModel.background
                 if (proOb.clock_events_filter_transparency && color != null) {
-                        view.setBackgroundColor(Color.argb(
+                    view.setBackgroundColor(
+                        Color.argb(
                             round(color.alpha * .8f).toInt(),
                             color.red,
                             color.green,
                             color.blue
-                        ))
+                        )
+                    )
                 }
                 val h1 = element.eventModel.startTime[Calendar.HOUR_OF_DAY] - proOb.clock_min_hour
                 val h2 = element.eventModel.endTime[Calendar.HOUR_OF_DAY] - proOb.clock_min_hour
@@ -473,10 +535,13 @@ class OneDayLayout @JvmOverloads constructor(
                 } else
                     cy3
                 val mart = coy1 - lastCoorY
-                val margin_start_to_draw = (proOb.getCoorXToDrawVerticalLine() - proOb.getCoorXToDrawHorizontalLines()) * 2
-                val width_to_draw = displayMetrics.widthPixels - proOb.getCoorXToDrawHorizontalLines() - margin_start_to_draw
-                val width_by_event = width_to_draw / element.events - proOb.clock_events_padding_between / Constants.divisorPadding
-                val tvlp = LinearLayout.LayoutParams (
+                val margin_start_to_draw =
+                    (proOb.getCoorXToDrawVerticalLine() - proOb.getCoorXToDrawHorizontalLines()) * 2
+                val width_to_draw =
+                    displayMetrics.widthPixels - proOb.getCoorXToDrawHorizontalLines() - margin_start_to_draw
+                val width_by_event =
+                    width_to_draw / element.events - proOb.clock_events_padding_between / Constants.divisorPadding
+                val tvlp = LinearLayout.LayoutParams(
                     width_by_event.toInt(),
                     (coy2 - coy1).toInt()
                 )
@@ -495,7 +560,7 @@ class OneDayLayout @JvmOverloads constructor(
                 view.id = View.generateViewId()
                 try {
                     linearEvents.addView(view)
-                } catch (il: IllegalStateException){
+                } catch (il: IllegalStateException) {
                     Log.d(TAG, "Fail to add a view by: ${il.stackTrace}")
                 }
                 lastCoorY = coy2
@@ -513,15 +578,15 @@ class OneDayLayout @JvmOverloads constructor(
         return super.dispatchTouchEvent(ev)
     }
 
-    fun moveScrollUp(){
+    fun moveScrollUp() {
         scroll.scrollTo(0, 0)
     }
 
-    fun moveScrollCenter(){
+    fun moveScrollCenter() {
         scroll.scrollTo(0, height / 2)
     }
 
-    fun moveScrollDown(){
+    fun moveScrollDown() {
         scroll.scrollTo(0, height)
     }
 }

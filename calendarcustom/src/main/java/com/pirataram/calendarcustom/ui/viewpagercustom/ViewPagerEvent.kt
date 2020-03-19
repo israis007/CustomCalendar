@@ -32,4 +32,6 @@ interface ViewPagerEvent {
 
     fun getDirection(direction: ViewPagerCalendar.Direction)
 
+    fun onEventCreated(startTime: Calendar, endTime: Calendar)
+
 }

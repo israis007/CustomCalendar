@@ -4,4 +4,7 @@
     <string name="date_mask">dd/MM/yyyy</string>
     <string name="event_card_title">New Event</string>
     <string name="event_card_hour">00:00 - 01:00</string>
+    <string name="clock_message_error_outworking">You cannot create events within business hours</string>
+    <string name="clock_message_error_working">You cannot create events after business hours</string>
+    <string name="clock_message_error_alltime">Cannot create events</string>
 </resources>

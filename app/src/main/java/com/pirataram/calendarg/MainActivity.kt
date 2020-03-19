@@ -149,6 +149,12 @@ class MainActivity : AppCompatActivity() {
             override fun getDirection(direction: ViewPagerCalendar.Direction) {
 
             }
+
+            override fun onEventCreated(startTime: Calendar, endTime: Calendar) {
+                val string = ("${DateHourFormatter.getStringFormatted(startTime, "dd HH:mm")} -> ${DateHourFormatter.getStringFormatted(endTime, "dd HH:mm")}")
+
+                Toast.makeText(this@MainActivity, string, Toast.LENGTH_LONG).show()
+            }
         }
 
         val calMax = Calendar.getInstance(Locale.getDefault()).apply {
