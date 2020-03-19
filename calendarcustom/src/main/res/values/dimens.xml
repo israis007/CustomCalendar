@@ -10,4 +10,6 @@
     <dimen name="clock_linenow_radius_circle">6sp</dimen>
     <dimen name="clock_linenow_height">1sp</dimen>
     <dimen name="clock_event_padding">3sp</dimen>
+    <dimen name="cardview_event_redious">10sp</dimen>
+    <dimen name="cardview_margin">9sp</dimen>
 </resources>

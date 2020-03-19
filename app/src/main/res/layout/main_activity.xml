@@ -38,6 +38,7 @@
         app:clock_text_mask="H:mm"
         app:clock_events_filter_transparency="false"
         app:clock_events_padding_between="8sp"
+        app:clock_create_event_space="workingTime"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
