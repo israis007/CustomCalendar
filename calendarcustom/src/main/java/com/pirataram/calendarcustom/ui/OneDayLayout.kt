@@ -379,6 +379,8 @@ class OneDayLayout @JvmOverloads constructor(
         if (coorsNewEvent == null)
             return
 
+        if (proOb.oneLayoutEvent != null)
+            proOb.oneLayoutEvent!!.onDragging(coorsNewEvent!!)
         if (proOb.viewNewEvent != null)
             newEventCard = proOb.viewNewEvent
         else {
