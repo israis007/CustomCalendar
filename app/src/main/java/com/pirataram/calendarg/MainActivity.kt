@@ -5,9 +5,11 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatTextView
 import com.pirataram.calendarcustom.models.EventModel
+import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.DateHourFormatter
 import com.pirataram.calendarcustom.ui.OneDayLayout
 import com.pirataram.calendarcustom.ui.viewpagercustom.ViewPagerCalendar
@@ -30,12 +32,16 @@ class MainActivity : AppCompatActivity() {
     private var refToday = false
     private var refNext = false
     private var calendarSelect: Calendar = Calendar.getInstance(Locale.getDefault())
+    private lateinit var newEventView: View
+    private lateinit var tv: AppCompatTextView
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
 
+        newEventView = LayoutInflater.from(this@MainActivity).inflate(R.layout.custom_new_event, null, false)
+        tv = newEventView.findViewById(R.id.new_event_tv_hour)
 
         eventsDay1.forEach { element ->
             run {
@@ -155,6 +161,11 @@ class MainActivity : AppCompatActivity() {
 
                 Toast.makeText(this@MainActivity, string, Toast.LENGTH_LONG).show()
             }
+
+            override fun onEventDragging(eventData: PropertiesObject.CoorYNewEvent) {
+                val string = ("${DateHourFormatter.getStringFormatted(eventData.startDate, "HH:mm aa")} -> ${DateHourFormatter.getStringFormatted(eventData.endDate, "HH:mm aa")}")
+                tv.text = string
+            }
         }
 
         val calMax = Calendar.getInstance(Locale.getDefault()).apply {
@@ -165,6 +176,7 @@ class MainActivity : AppCompatActivity() {
         }
         relojito.setMaxDate(calMax)
         relojito.setMinDate(calMin)
+        relojito.setViewNewEvent(newEventView)
         relojito.addViewPagerListeners(eventos)
 
 //        if (savedInstanceState == null) {

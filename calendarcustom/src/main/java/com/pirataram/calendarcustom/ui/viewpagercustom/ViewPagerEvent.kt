@@ -2,6 +2,7 @@ package com.pirataram.calendarcustom.ui.viewpagercustom
 
 import android.app.Activity
 import com.pirataram.calendarcustom.models.EventModel
+import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.ui.OneDayLayout
 import java.util.*
 import kotlin.collections.ArrayList
@@ -33,5 +34,7 @@ interface ViewPagerEvent {
     fun getDirection(direction: ViewPagerCalendar.Direction)
 
     fun onEventCreated(startTime: Calendar, endTime: Calendar)
+
+    fun onEventDragging(eventData: PropertiesObject.CoorYNewEvent)
 
 }

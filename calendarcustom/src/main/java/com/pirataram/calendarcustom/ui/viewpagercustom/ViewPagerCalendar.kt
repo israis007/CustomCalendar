@@ -307,6 +307,10 @@ class ViewPagerCalendar @JvmOverloads constructor(
             override fun endDrag(startDate: Calendar, endTime: Calendar) {
                 viewPagerEvent.onEventCreated(startDate, endTime)
             }
+
+            override fun onDragging(newEvent: PropertiesObject.CoorYNewEvent) {
+                viewPagerEvent.onEventDragging(newEvent)
+            }
         }
 
         recreateCache(null)
