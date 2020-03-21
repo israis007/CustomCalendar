@@ -317,7 +317,7 @@ class OneDayLayout @JvmOverloads constructor(
                 calculateNewLP()
 
                 val clipData = ClipData.newPlainText("", "")
-                val shadowBuilder = MyDragShadowBuilder(newEventCard!!)
+                val shadowBuilder = MyDragShadowBuilder()
 
                 newEventCard!!.startDrag(clipData, shadowBuilder, it, 0)
                 true
