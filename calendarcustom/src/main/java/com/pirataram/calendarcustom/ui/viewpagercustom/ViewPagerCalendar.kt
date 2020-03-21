@@ -564,7 +564,7 @@ class ViewPagerCalendar @JvmOverloads constructor(
     }
 
     fun setViewNewEvent(view: View){
-        this.proOb.viewNewEvent = view
+        Constants.viewNewEvent = view
         recreateCache(null)
     }
 

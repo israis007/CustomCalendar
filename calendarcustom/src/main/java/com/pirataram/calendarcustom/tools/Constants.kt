@@ -1,6 +1,7 @@
 package com.pirataram.calendarcustom.tools
 
 import android.util.Log
+import android.view.View
 import androidx.lifecycle.MutableLiveData
 import com.pirataram.calendarcustom.BuildConfig
 import kotlinx.coroutines.*
@@ -16,6 +17,7 @@ class Constants {
         val calendarChanged = MutableLiveData<Calendar>()
         val heightChange = MutableLiveData<Float>()
         private var isActiveCoroutine = false
+        var viewNewEvent: View? = null
 
         val asd = GlobalScope.async(Dispatchers.Main + CoroutineName("pirataCoroutine")) {
             while (true) {

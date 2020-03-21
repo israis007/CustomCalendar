@@ -381,8 +381,8 @@ class OneDayLayout @JvmOverloads constructor(
 
         if (proOb.oneLayoutEvent != null)
             proOb.oneLayoutEvent!!.onDragging(coorsNewEvent!!)
-        if (proOb.viewNewEvent != null)
-            newEventCard = proOb.viewNewEvent
+        if (Constants.viewNewEvent != null)
+            newEventCard = Constants.viewNewEvent
         else {
             newEventCard = LayoutInflater.from(context).inflate(R.layout.events_view, null, false)
             val textHour = newEventCard!!.findViewById<AppCompatTextView>(R.id.cad_hours)
@@ -407,6 +407,10 @@ class OneDayLayout @JvmOverloads constructor(
             0
         )
         newEventCard!!.layoutParams = lp
+
+        if (newEventCard!!.parent != null)
+            (newEventCard!!.parent as ViewGroup).removeView(newEventCard)
+
         linearNewEvents.addView(newEventCard)
     }
 

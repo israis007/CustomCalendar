@@ -53,7 +53,6 @@ class PropertiesObject(var calendar: Calendar) {
     var clock_create_event_enable_toast: Boolean = true
 
     var oneLayoutEvent: OneLayoutEvent? = null
-    var viewNewEvent: View? = null
 
     private var clockPaint: TextPaint = TextPaint()
     private var lineNowPaint: Paint = Paint()
