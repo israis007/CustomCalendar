@@ -47,6 +47,7 @@ class PropertiesObject(var calendar: Calendar) {
     var clock_create_event_enable: Boolean = true
     var clock_create_event_space: SpacesEvent = SpacesEvent.ALLTIME
     var clock_create_event_enable_toast: Boolean = true
+    var clock_events_event_duration: Duration = Duration.MINUTES60
 
     private var clockPaint: TextPaint = TextPaint()
     private var lineNowPaint: Paint = Paint()
@@ -61,6 +62,8 @@ class PropertiesObject(var calendar: Calendar) {
     }
 
     fun getHoursToDraw() = clock_max_hour - clock_min_hour
+
+    fun getHoursToDrawWorking() = clock_worktime_max_hour - clock_worktime_min_hour
 
     fun getheighByPx() = clock_text_margin_top + clock_text_size
 
@@ -204,6 +207,19 @@ class PropertiesObject(var calendar: Calendar) {
                 else -> SpacesEvent.OUTWORKING
             }
         }
+
+        fun getDuration(value: Int): Duration{
+            return when (value){
+                1 -> Duration.MINUTES15
+                2 -> Duration.MINUTES30
+                3 -> Duration.MINUTES45
+                4 -> Duration.MINUTES60
+                5 -> Duration.MINUTES75
+                6 -> Duration.MINUTES90
+                7 -> Duration.MINUTES105
+                else -> Duration.MINUTES120
+            }
+        }
     }
 
     enum class Direction {
@@ -216,6 +232,17 @@ class PropertiesObject(var calendar: Calendar) {
         FUTURE,
         PAST,
         INFINITELY;
+    }
+
+    enum class Duration {
+        MINUTES15,
+        MINUTES30,
+        MINUTES45,
+        MINUTES60,
+        MINUTES75,
+        MINUTES90,
+        MINUTES105,
+        MINUTES120
     }
 
     enum class SpacesEvent {
@@ -262,17 +289,91 @@ class PropertiesObject(var calendar: Calendar) {
                 for (i in coorys.indices){
                     var element = coorys[i]
                     if (element.coordenateY >= coorY) {
-                        element = when {
-                            i <= 2 -> coorys[0]
-                            i >= coorys.size - 1 -> coorys[coorys.size - 5]
-                            else -> coorys[i - 3]
+                        element = when(clock_events_event_duration){
+                            Duration.MINUTES15 -> when {
+                                i <= 1 -> coorys[0]
+                                i >= coorys.size - 1 -> coorys[coorys.size - 2]
+                                else -> coorys[i - 1]
+                            }
+                            Duration.MINUTES30 -> when {
+                                i <= 1 -> coorys[0]
+                                i >= coorys.size - 1 -> coorys[coorys.size - 3]
+                                else -> coorys[i - 1]
+                            }
+                            Duration.MINUTES45 -> when {
+                                i <= 2 -> coorys[0]
+                                i >= coorys.size - 1 -> coorys[coorys.size - 4]
+                                else -> coorys[i - 2]
+                            }
+                            Duration.MINUTES60 -> when {
+                                i <= 2 -> coorys[0]
+                                i >= coorys.size - 1 -> coorys[coorys.size - 5]
+                                else -> coorys[i - 3]
+                            }
+                            Duration.MINUTES75 -> when {
+                                i <= 2 -> coorys[0]
+                                i >= coorys.size - 2 -> coorys[coorys.size - 6]
+                                else -> coorys[i - 3]
+                            }
+                            Duration.MINUTES90 -> when {
+                                i <= 4 -> coorys[0]
+                                i >= coorys.size - 3 -> coorys[coorys.size - 7]
+                                else -> coorys[i - 4]
+                            }
+                            Duration.MINUTES105 ->  when {
+                                i <= 5 -> coorys[0]
+                                i >= coorys.size - 3 -> coorys[coorys.size - 8]
+                                else -> coorys[i - 5]
+                            }
+                            else -> when {
+                                i <= 6 -> coorys[0]
+                                i >= coorys.size - 4 -> coorys[coorys.size - 9]
+                                else -> coorys[i - 6]
+                            }
                         }
                         return createNewCoorY(
                             element.coordenateY,
-                            when {
-                                i <= 3 -> coorys[4].coordenateY
-                                i >= coorys.size - 2 -> coorys[coorys.size - 1].coordenateY
-                                else -> coorys[i + 1].coordenateY
+                            when(clock_events_event_duration){
+                                Duration.MINUTES15 -> when {
+                                    i <= 1 -> coorys[1].coordenateY
+                                    i >= coorys.size - 1 -> coorys[coorys.size - 1].coordenateY
+                                    else -> coorys[i].coordenateY
+                                }
+                                Duration.MINUTES30 -> when {
+                                    i <= 1 -> coorys[2].coordenateY
+                                    i >= coorys.size - 2 -> coorys[coorys.size - 1].coordenateY
+                                    else -> coorys[i + 1].coordenateY
+                                }
+                                Duration.MINUTES45 -> when {
+                                    i <= 2 -> coorys[3].coordenateY
+                                    i >= coorys.size - 2 -> coorys[coorys.size - 1].coordenateY
+                                    else -> coorys[i + 1].coordenateY
+                                }
+                                Duration.MINUTES60 -> when {
+                                    i <= 3 -> coorys[4].coordenateY
+                                    i >= coorys.size - 2 -> coorys[coorys.size - 1].coordenateY
+                                    else -> coorys[i + 1].coordenateY
+                                }
+                                Duration.MINUTES75 -> when {
+                                    i <= 3 -> coorys[5].coordenateY
+                                    i >= coorys.size - 3 -> coorys[coorys.size - 1].coordenateY
+                                    else -> coorys[i + 2].coordenateY
+                                }
+                                Duration.MINUTES90 -> when {
+                                    i <= 3 -> coorys[6].coordenateY
+                                    i >= coorys.size - 3 -> coorys[coorys.size - 1].coordenateY
+                                    else -> coorys[i + 2].coordenateY
+                                }
+                                Duration.MINUTES105 -> when {
+                                    i <= 5 -> coorys[7].coordenateY
+                                    i >= coorys.size - 3 -> coorys[coorys.size - 1].coordenateY
+                                    else -> coorys[i + 2].coordenateY
+                                }
+                                else -> when {
+                                    i <= 5 -> coorys[8].coordenateY
+                                    i >= coorys.size - 4 -> coorys[coorys.size - 1].coordenateY
+                                    else -> coorys[i + 2].coordenateY
+                                }
                             },
                             if (i >= coorys.size - 2) 23 else element.hour,
                             if (i >= coorys.size - 2) 0 else element.minute
@@ -285,9 +386,8 @@ class PropertiesObject(var calendar: Calendar) {
                 val nuevEvents = ArrayList<CoorsYQuarter>()
                 coorys.forEach { element ->
                     run {
-                        if (element.hour >= clock_worktime_min_hour)
-                            if (element.hour <= clock_worktime_max_hour)
-                                nuevEvents.add(element)
+                        if (element.hour in clock_worktime_min_hour..clock_worktime_max_hour)
+                            nuevEvents.add(element)
                     }
                 }
 
@@ -303,7 +403,16 @@ class PropertiesObject(var calendar: Calendar) {
                         element = when {
                             i <= 2 -> coorys[0]
                             i >= coorys.size - 1 -> coorys[coorys.size - 5]
-                            else -> coorys[i - 3]
+                            else -> coorys[i - when(clock_events_event_duration){
+                                Duration.MINUTES15 -> 1
+                                Duration.MINUTES30 -> 1
+                                Duration.MINUTES45 -> 2
+                                Duration.MINUTES60 -> 3
+                                Duration.MINUTES75 -> 4
+                                Duration.MINUTES90 -> 5
+                                Duration.MINUTES105 -> 6
+                                else -> 7
+                            }]
                         }
                         return createNewCoorY(
                             element.coordenateY,
@@ -334,9 +443,17 @@ class PropertiesObject(var calendar: Calendar) {
             cy1,
             cy2,
             cal1,
-            DateHourHelper.cloneCalendar(calendar).apply {
-                set(Calendar.HOUR_OF_DAY, hour + 1)
-                set(Calendar.MINUTE, minute)
+            DateHourHelper.cloneCalendar(cal1).apply {
+                when(clock_events_event_duration){
+                    Duration.MINUTES15 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 15)
+                    Duration.MINUTES30 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 30)
+                    Duration.MINUTES45 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 45)
+                    Duration.MINUTES60 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 60)
+                    Duration.MINUTES75 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 75)
+                    Duration.MINUTES90 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 90)
+                    Duration.MINUTES105 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 105)
+                    Duration.MINUTES120 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 120)
+                }
             },
             cal1[Calendar.HOUR_OF_DAY] in (clock_worktime_min_hour + 1) until clock_worktime_max_hour
         )

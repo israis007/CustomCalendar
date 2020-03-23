@@ -10,7 +10,6 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.view.DragEvent.ACTION_DRAG_ENDED
-import android.view.DragEvent.ACTION_DRAG_STARTED
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
@@ -203,6 +202,7 @@ class OneDayLayout @JvmOverloads constructor(
                 R.styleable.OneDayLayout_clock_events_padding_between,
                 reso.getDimension(R.dimen.clock_event_padding)
             )
+            proOb.clock_events_event_duration = PropertiesObject.getDuration(getInteger(R.styleable.OneDayLayout_clock_creation_event_duration, reso.getInteger(R.integer.duration_event)))
             hourHeight = proOb.clock_text_size + proOb.clock_text_margin_top
         }
 

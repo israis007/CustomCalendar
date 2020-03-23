@@ -157,18 +157,19 @@ class ViewPagerCalendar @JvmOverloads constructor(
             proOb.clock_max_date = PropertiesObject.getLimits(
                 getInteger(
                     R.styleable.ViewPagerCalendar_clock_max_date,
-                    3
+                    reso.getInteger(R.integer.default_limit)
                 )
             )
             proOb.clock_min_date = PropertiesObject.getLimits(
                 getInteger(
                     R.styleable.ViewPagerCalendar_clock_min_date,
-                    3
+                    reso.getInteger(R.integer.default_limit)
                 )
             )
             proOb.clock_create_event_enable = getBoolean(R.styleable.ViewPagerCalendar_clock_create_event_enable, true)
             proOb.clock_create_event_enable_toast = getBoolean(R.styleable.ViewPagerCalendar_clock_create_event_enable_toast, true)
-            proOb.clock_create_event_space = PropertiesObject.getSpaceEvent(getInteger(R.styleable.ViewPagerCalendar_clock_create_event_space, 0))
+            proOb.clock_create_event_space = PropertiesObject.getSpaceEvent(getInteger(R.styleable.ViewPagerCalendar_clock_create_event_space, reso.getInteger(R.integer.default_worktime)))
+            proOb.clock_events_event_duration = PropertiesObject.getDuration(getInteger(R.styleable.ViewPagerCalendar_clock_creation_event_duration, reso.getInteger(R.integer.duration_event)))
             var timeMax = getString(R.styleable.ViewPagerCalendar_clock_max_date_millis)
             var timeMin = getString(R.styleable.ViewPagerCalendar_clock_min_date_millis)
             val cal = DateHourHelper.getCurrentCalendarWithoutHour()
@@ -287,10 +288,16 @@ class ViewPagerCalendar @JvmOverloads constructor(
                     this.viewPagerEvent!!.onEventCreated(
                         it,
                         DateHourHelper.cloneCalendar(it).apply {
-                            set(
-                                Calendar.HOUR_OF_DAY,
-                                get(Calendar.HOUR_OF_DAY) + 1
-                            )
+                            when(proOb.clock_events_event_duration){
+                                PropertiesObject.Duration.MINUTES15 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 15)
+                                PropertiesObject.Duration.MINUTES30 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 30)
+                                PropertiesObject.Duration.MINUTES45 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 45)
+                                PropertiesObject.Duration.MINUTES60 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 60)
+                                PropertiesObject.Duration.MINUTES75 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 75)
+                                PropertiesObject.Duration.MINUTES90 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 90)
+                                PropertiesObject.Duration.MINUTES105 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 105)
+                                PropertiesObject.Duration.MINUTES120 -> set(Calendar.MINUTE, get(Calendar.MINUTE) + 120)
+                            }
                         })
                 }
             }
@@ -435,6 +442,7 @@ class ViewPagerCalendar @JvmOverloads constructor(
             clock_create_event_enable = proOb.clock_create_event_enable
             clock_create_event_space = proOb.clock_create_event_space
             clock_create_event_enable_toast = proOb.clock_create_event_enable_toast
+            clock_events_event_duration = proOb.clock_events_event_duration
         }
         prop.calendar = cal
         return OneDayLayout(context, prop, cal)

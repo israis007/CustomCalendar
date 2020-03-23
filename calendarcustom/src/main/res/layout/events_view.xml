@@ -5,26 +5,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="wrap_content"
     android:background="@drawable/backgorund_card"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/card_title"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/event_card_title"
-        android:layout_marginStart="@dimen/cardview_margin"
-        android:layout_marginEnd="@dimen/cardview_margin"
-        android:layout_marginTop="@dimen/cardview_margin"
+        android:layout_margin="@dimen/cardview_margin"
         android:textColor="@color/cardview_light_background"
         />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/cad_hours"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/cardview_margin"
-        android:layout_marginEnd="@dimen/cardview_margin"
-        android:layout_marginBottom="@dimen/cardview_margin"
+        android:layout_margin="@dimen/cardview_margin"
         android:textColor="@color/cardview_light_background"
         android:text="@string/event_card_hour" />
 

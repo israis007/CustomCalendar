@@ -8,4 +8,7 @@
     <integer name="clock_worktime_min_hour">8</integer>
     <integer name="cache_days">2</integer>
     <integer name="cache_all_days">5</integer>
+    <integer name="default_worktime">0</integer>
+    <integer name="default_limit">3</integer>
+    <integer name="duration_event">4</integer>
 </resources>
