@@ -38,7 +38,8 @@
         app:clock_text_mask="H:mm"
         app:clock_events_filter_transparency="false"
         app:clock_events_padding_between="8sp"
-        app:clock_create_event_space="workingTime"
+        app:clock_create_event_space="allTime"
+        app:clock_creation_event_duration="minutes_15"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
