@@ -15,9 +15,6 @@ import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
 import com.pirataram.calendarcustom.tools.DateHourHelper
 import com.pirataram.calendarcustom.ui.OneDayLayout
-import com.pirataram.calendarcustom.ui.OneLayoutEvent
-import java.lang.Exception
-import java.lang.NumberFormatException
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -32,6 +29,7 @@ class ViewPagerCalendar @JvmOverloads constructor(
     private lateinit var proOb: PropertiesObject
     private var viewPagerEvent: ViewPagerEvent? = null
     private var today = 0
+    private var oneDayLayoutSelected: OneDayLayout? = null
 
     init {
         context.withStyledAttributes(
@@ -271,8 +269,32 @@ class ViewPagerCalendar @JvmOverloads constructor(
 
             override fun onPageSelected(position: Int) {
                 selected = viewPager.currentItem
+                oneDayLayoutSelected = listDaysView[selected]
             }
         })
+
+        Constants.currentCoorY.observeForever {
+            if (viewPagerEvent != null){
+                this.viewPagerEvent!!.onEventDragging(Constants.currentCoorY.value!!)
+            }
+        }
+
+        Constants.dateSelected.observeForever {
+            if (viewPagerEvent != null){
+                if (oneDayLayoutSelected == null)
+                    oneDayLayoutSelected = listDaysView[today]
+                else if (DateHourHelper.isSameDay(oneDayLayoutSelected!!.calendar, it)){
+                    this.viewPagerEvent!!.onEventCreated(
+                        it,
+                        DateHourHelper.cloneCalendar(it).apply {
+                            set(
+                                Calendar.HOUR_OF_DAY,
+                                get(Calendar.HOUR_OF_DAY) + 1
+                            )
+                        })
+                }
+            }
+        }
 
     }
 
@@ -303,15 +325,15 @@ class ViewPagerCalendar @JvmOverloads constructor(
         if (df != null && viewPagerEvent.refreshEventsNextDay())
             df.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsNextDay())
 
-        proOb.oneLayoutEvent = object: OneLayoutEvent {
-            override fun endDrag(startDate: Calendar, endTime: Calendar) {
-                viewPagerEvent.onEventCreated(startDate, endTime)
-            }
-
-            override fun onDragging(newEvent: PropertiesObject.CoorYNewEvent) {
-                viewPagerEvent.onEventDragging(newEvent)
-            }
-        }
+//        Constants.oneLayoutEvent = object: OneLayoutEvent {
+//            override fun endDrag(startDate: Calendar, endTime: Calendar) {
+//                viewPagerEvent.onEventCreated(startDate, endTime)
+//            }
+//
+//            override fun onDragging(newEvent: PropertiesObject.CoorYNewEvent) {
+//                viewPagerEvent.onEventDragging(newEvent)
+//            }
+//        }
 
         recreateCache(null)
     }
@@ -564,7 +586,7 @@ class ViewPagerCalendar @JvmOverloads constructor(
     }
 
     fun setViewNewEvent(view: View){
-        this.proOb.viewNewEvent = view
+        Constants.viewNewEvent = view
         recreateCache(null)
     }
 

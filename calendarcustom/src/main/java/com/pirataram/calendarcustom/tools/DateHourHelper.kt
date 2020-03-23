@@ -54,8 +54,7 @@ class DateHourHelper {
                 else -> DAY_OF.TODAY
             }
 
-        fun cloneCalendar(calendar: Calendar): Calendar =
-            Calendar.getInstance(Locale.getDefault()).apply {
+        fun cloneCalendar(calendar: Calendar): Calendar = Calendar.getInstance(Locale.getDefault()).apply {
                 set(Calendar.YEAR, calendar[Calendar.YEAR])
                 set(Calendar.MONTH, calendar[Calendar.MONTH])
                 set(Calendar.DAY_OF_YEAR, calendar[Calendar.DAY_OF_YEAR])
@@ -66,6 +65,14 @@ class DateHourHelper {
                 set(Calendar.SECOND, calendar[Calendar.SECOND])
                 set(Calendar.MILLISECOND, calendar[Calendar.MILLISECOND])
             }
+
+        fun isSameDay(cal1: Calendar, cal2: Calendar) =
+            cal1[Calendar.DAY_OF_MONTH] == cal2[Calendar.DAY_OF_MONTH] &&
+                    cal1[Calendar.MONTH] == cal2[Calendar.MONTH] &&
+                    cal1[Calendar.YEAR] == cal2[Calendar.YEAR]
+
+        fun isValidDayToNewEvent(calendar: Calendar) = getCalendarInDays(calendar) >= getCurrentCalendarInDays()
+
 
         enum class DAY_OF {
             PAST,

@@ -2,13 +2,9 @@ package com.pirataram.calendarcustom.models
 
 import android.graphics.Paint
 import android.text.TextPaint
-import android.util.Log
-import android.view.View
 import com.google.gson.Gson
 import com.pirataram.calendarcustom.tools.DateHourFormatter
 import com.pirataram.calendarcustom.tools.DateHourHelper
-import com.pirataram.calendarcustom.ui.OneLayoutEvent
-import java.text.DecimalFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -51,9 +47,6 @@ class PropertiesObject(var calendar: Calendar) {
     var clock_create_event_enable: Boolean = true
     var clock_create_event_space: SpacesEvent = SpacesEvent.ALLTIME
     var clock_create_event_enable_toast: Boolean = true
-
-    var oneLayoutEvent: OneLayoutEvent? = null
-    var viewNewEvent: View? = null
 
     private var clockPaint: TextPaint = TextPaint()
     private var lineNowPaint: Paint = Paint()
@@ -262,7 +255,7 @@ class PropertiesObject(var calendar: Calendar) {
         return listCoors
     }
 
-    fun getCoorYNewEvent(coorY: Float, cal: Calendar): CoorYNewEvent? {
+    fun getCoorYNewEvent(coorY: Float): CoorYNewEvent? {
         var coorys = getCoordinatesYEachQuarterOfHour()
         when(clock_create_event_space){
             SpacesEvent.ALLTIME -> {
@@ -282,8 +275,7 @@ class PropertiesObject(var calendar: Calendar) {
                                 else -> coorys[i + 1].coordenateY
                             },
                             if (i >= coorys.size - 2) 23 else element.hour,
-                            if (i >= coorys.size - 2) 0 else element.minute,
-                            cal
+                            if (i >= coorys.size - 2) 0 else element.minute
                         )
                     }
                 }
@@ -321,8 +313,7 @@ class PropertiesObject(var calendar: Calendar) {
                                 else -> coorys[i + 1].coordenateY
                             },
                             if (i >= coorys.size - 2) clock_worktime_max_hour - 1 else element.hour,
-                            if (i >= coorys.size - 2) 0 else element.minute,
-                            cal
+                            if (i >= coorys.size - 2) 0 else element.minute
                         )
                     }
                 }
@@ -334,19 +325,20 @@ class PropertiesObject(var calendar: Calendar) {
         return null
     }
 
-    private fun createNewCoorY(cy1: Float, cy2: Float, hour: Int, minute: Int, cal: Calendar): CoorYNewEvent{
+    private fun createNewCoorY(cy1: Float, cy2: Float, hour: Int, minute: Int): CoorYNewEvent{
+        val cal1 = DateHourHelper.cloneCalendar(calendar).apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+        }
         return CoorYNewEvent(
             cy1,
             cy2,
-            DateHourHelper.cloneCalendar(cal).apply {
-                set(Calendar.HOUR_OF_DAY, hour)
-                set(Calendar.MINUTE, minute)
-            },
-            DateHourHelper.cloneCalendar(cal).apply {
+            cal1,
+            DateHourHelper.cloneCalendar(calendar).apply {
                 set(Calendar.HOUR_OF_DAY, hour + 1)
                 set(Calendar.MINUTE, minute)
             },
-            calendar[Calendar.HOUR_OF_DAY] in (clock_worktime_min_hour + 1) until clock_worktime_max_hour
+            cal1[Calendar.HOUR_OF_DAY] in (clock_worktime_min_hour + 1) until clock_worktime_max_hour
         )
     }
 
