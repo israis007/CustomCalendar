@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.Log
@@ -27,6 +28,7 @@ import com.pirataram.calendarcustom.models.EventModel
 import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
 import com.pirataram.calendarcustom.tools.DateHourFormatter
+import com.pirataram.calendarcustom.tools.DateHourHelper
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.abs
@@ -297,7 +299,7 @@ class OneDayLayout @JvmOverloads constructor(
 
         calculateNewParams()
 
-        if (proOb.clock_create_event_enable) {
+        if (proOb.clock_create_event_enable && DateHourHelper.isValidDayToNewEvent(proOb.calendar)) {
             linearEvents.setOnLongClickListener {
                 if (proOb.clock_create_event_enable_toast) {
                     Toast.makeText(
@@ -319,7 +321,11 @@ class OneDayLayout @JvmOverloads constructor(
                 val clipData = ClipData.newPlainText("", "")
                 val shadowBuilder = MyDragShadowBuilder()
 
-                newEventCard!!.startDrag(clipData, shadowBuilder, it, 0)
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                    newEventCard!!.startDragAndDrop(clipData, shadowBuilder, "no sé", 0)
+                else
+                    newEventCard!!.startDrag(clipData, shadowBuilder, it, 0)
                 true
             }
 
@@ -344,12 +350,8 @@ class OneDayLayout @JvmOverloads constructor(
                             PropertiesObject.SpacesEvent.ALLTIME -> this@OneDayLayout.context.getString(R.string.clock_message_error_alltime)
                         }, Toast.LENGTH_LONG).show()
                     } else {
-                        if (proOb.oneLayoutEvent != null)
-                            proOb.oneLayoutEvent!!.endDrag(
-                                coorsNewEvent!!.startDate,
-                                coorsNewEvent!!.endDate
-                            )
-                            linearNewEvents.removeView(newEventCard)
+                        Constants.dateSelected.value = coorsNewEvent!!.startDate
+                        linearNewEvents.removeView(newEventCard)
                     }
                 }
                 true
@@ -375,12 +377,11 @@ class OneDayLayout @JvmOverloads constructor(
     private fun calculateNewLP() {
         if (newEventCard != null)
             linearNewEvents.removeView(newEventCard)
-        coorsNewEvent = proOb.getCoorYNewEvent(cY, proOb.calendar)
+        coorsNewEvent = proOb.getCoorYNewEvent(cY)
         if (coorsNewEvent == null)
             return
 
-        if (proOb.oneLayoutEvent != null)
-            proOb.oneLayoutEvent!!.onDragging(coorsNewEvent!!)
+        Constants.currentCoorY.value = coorsNewEvent!!
         if (Constants.viewNewEvent != null)
             newEventCard = Constants.viewNewEvent
         else {
@@ -408,10 +409,11 @@ class OneDayLayout @JvmOverloads constructor(
         )
         newEventCard!!.layoutParams = lp
 
-        if (newEventCard!!.parent != null)
-            (newEventCard!!.parent as ViewGroup).removeView(newEventCard)
+        val v = newEventCard!!
+        if (v.parent != null)
+            (v.parent as ViewGroup).removeView(v)
 
-        linearNewEvents.addView(newEventCard)
+        linearNewEvents.addView(v)
     }
 
     private fun calculateNewParams() {
@@ -579,7 +581,6 @@ class OneDayLayout @JvmOverloads constructor(
             cX = ev.x
             cY = ev.y + scrollPosition
             scaleDetector.onTouchEvent(ev)
-//            Log.d(TAG, "Coordenadas evento: X-> $cX  Y -> $cY")
         }
         return super.dispatchTouchEvent(ev)
     }
