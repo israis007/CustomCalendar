@@ -12,10 +12,10 @@ data class EventModel(
     val endTime: Calendar,
     val background: Int?,
     val view: View,
-    val classPojo: Any
+    val classPojo: Any?
 ) {
 
-    constructor(id: Long, startTime: Long, endTime: Long, view: View, classPojo: Any): this(
+    constructor(id: Long, startTime: Long, endTime: Long, view: View, classPojo: Any?): this(
         id, getCalendar(startTime), getCalendar(endTime), null, view, classPojo
     )
 
