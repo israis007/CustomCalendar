@@ -1,5 +1,6 @@
 package com.pirataram.calendarcustom.ui.viewpagercustom
 
+import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
@@ -11,6 +12,7 @@ import androidx.viewpager.widget.ViewPager
 import com.google.gson.Gson
 import com.pirataram.calendarcustom.BuildConfig
 import com.pirataram.calendarcustom.R
+import com.pirataram.calendarcustom.models.EventModel
 import com.pirataram.calendarcustom.models.PropertiesObject
 import com.pirataram.calendarcustom.tools.Constants
 import com.pirataram.calendarcustom.tools.DateHourHelper
@@ -30,6 +32,7 @@ class ViewPagerCalendar @JvmOverloads constructor(
     private var viewPagerEvent: ViewPagerEvent? = null
     private var today = 0
     private var oneDayLayoutSelected: OneDayLayout? = null
+    private var oneDayLayoutToday: OneDayLayout? = null
 
     init {
         context.withStyledAttributes(
@@ -332,15 +335,7 @@ class ViewPagerCalendar @JvmOverloads constructor(
         if (df != null && viewPagerEvent.refreshEventsNextDay())
             df.addEvents(viewPagerEvent.getActivity(), viewPagerEvent.addEventsNextDay())
 
-//        Constants.oneLayoutEvent = object: OneLayoutEvent {
-//            override fun endDrag(startDate: Calendar, endTime: Calendar) {
-//                viewPagerEvent.onEventCreated(startDate, endTime)
-//            }
-//
-//            override fun onDragging(newEvent: PropertiesObject.CoorYNewEvent) {
-//                viewPagerEvent.onEventDragging(newEvent)
-//            }
-//        }
+        oneDayLayoutToday = dt
 
         recreateCache(null)
     }
@@ -596,6 +591,12 @@ class ViewPagerCalendar @JvmOverloads constructor(
     fun setViewNewEvent(view: View){
         Constants.viewNewEvent = view
         recreateCache(null)
+    }
+
+    fun addEvent(activity: Activity, eventModel: EventModel){
+        if (oneDayLayoutToday != null) {
+            oneDayLayoutToday?.addEvent(activity, eventModel)
+        }
     }
 
 }

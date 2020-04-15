@@ -507,6 +507,41 @@ class OneDayLayout @JvmOverloads constructor(
         printEvents()
     }
 
+    fun addEvent(activity: Activity, eventModel: EventModel){
+        activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
+        val newEventDraw = DrawEventModel(Constants.eventStart, Constants.colsStart, eventModel)
+        var isAdded = false
+        repeat(drawList.size) { it2 ->
+            run {
+                val eventAdded = drawList[it2]
+                newEventDraw.cols = eventAdded.cols
+                newEventDraw.events = eventAdded.events
+                if (newEventDraw.eventModel.startTime.timeInMillis < eventAdded.eventModel.endTime.timeInMillis) {
+                    drawList[it2].events++
+                    newEventDraw.cols++
+                    newEventDraw.events++
+                    //Buscar si el evento ya fue agregado
+                    drawList.forEach { event ->
+                        run {
+                            if (event.eventModel.id == newEventDraw.eventModel.id) {
+                                isAdded = true
+                            }
+                        }
+                    }
+                    if (!isAdded) {
+                        drawList.add(newEventDraw)
+                        isAdded = true
+                    }
+                }
+            }
+        }
+        if (!isAdded) {
+            newEventDraw.cols = Constants.colsStart
+            newEventDraw.events = Constants.eventStart
+            drawList.add(newEventDraw)
+        }
+    }
+
     private fun printEvents() {
         lastCoorY = 0f
         //Remove all views
