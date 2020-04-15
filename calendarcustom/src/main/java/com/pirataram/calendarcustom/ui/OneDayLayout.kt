@@ -540,6 +540,8 @@ class OneDayLayout @JvmOverloads constructor(
             newEventDraw.events = Constants.eventStart
             drawList.add(newEventDraw)
         }
+        //Print Events
+        printEvents()
     }
 
     private fun printEvents() {
